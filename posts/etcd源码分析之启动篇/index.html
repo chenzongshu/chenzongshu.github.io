@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>Etcd源码分析 | 蜗牛龙门阵</title>
+    <meta property="og:title" content="Etcd源码分析 - 蜗牛龙门阵">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-02-05T11:27:22&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-02-05T11:27:22&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,java,博客,项目管理">
+    <meta name="description" content="Etcd源码分析">
+        
+    <meta name="author" content="chenzongshu">
+    <meta property="og:url" content="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%90%AF%E5%8A%A8%E7%AF%87/">
+    <link rel="shortcut icon" href='/chenzongshu.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="chenzongshu.github.io/chenzongshu.github.io">
+                        蜗牛龙门阵
+                    </a>
+                
+                <p class="description">专注容器等IT技术</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="" href="chenzongshu.github.io/chenzongshu.github.io">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#命令行输入">命令行输入</a></li>
+    <li><a href="#server启动">server启动</a></li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">Etcd源码分析</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年2月5日
+        </date>
+        
+        
+        
+        <div class="post-content">
+            <h1 id="启动">启动</h1>
+<p>启动从源码 <code>/etcdmain/main.go</code> 中的<code>main</code>函数开始</p>
+<pre><code>func Main() {
+	checkSupportArch()   // 检查系统是否支持
+
+	if len(os.Args) &gt; 1 {  // 获取入参
+		cmd := os.Args[1]  // 获取启动命令
+		if covArgs := os.Getenv(&quot;ETCDCOV_ARGS&quot;); len(covArgs) &gt; 0 {
+			args := strings.Split(os.Getenv(&quot;ETCDCOV_ARGS&quot;), &quot;\xe7\xcd&quot;)[1:]
+			rootCmd.SetArgs(args)
+			cmd = &quot;grpc-proxy&quot;
+		}
+		switch cmd {
+		case &quot;gateway&quot;, &quot;grpc-proxy&quot;:
+			if err := rootCmd.Execute(); err != nil {
+				fmt.Fprint(os.Stderr, err)
+				os.Exit(1)
+			}
+			return
+		}
+	}
+
+	startEtcdOrProxyV2()
+}
+</code></pre><p>上面仔细去看，前面是根据命令行输入的第一个参数去启动不同的代码逻辑</p>
+<p>后面的<code>startEtcdOrProxyV2()</code>则是启动etcd server的函数</p>
+<h2 id="命令行输入">命令行输入</h2>
+<p>我们来查看一下etcd命令的使用帮助:</p>
+<pre><code>$ ./etcd -help
+Usage:
+
+  etcd [flags]
+    Start an etcd server.
+
+  etcd --version //查看版本
+    Show the version of etcd.
+
+  etcd -h | --help //获取帮助
+    Show the help information about etcd.
+
+  etcd --config-file //设置配置文件
+    Path to the server configuration file.
+
+  etcd gateway //启动 L4 TCP网关代理
+    Run the stateless pass-through etcd TCP connection forwarding proxy.
+
+  etcd grpc-proxy //L7 grpc 代理
+    Run the stateless etcd v3 gRPC L7 reverse proxy.
+</code></pre><p>可以看到有三个启动命令</p>
+<pre><code> ./etcd //启动etcd服务
+ ./etcd gateway start //启动tcp网关代理
+ ./etcd grpc-proxy start //启动grpc网关代理
+</code></pre><p>其中,代码中的<code>rootCmd</code>,这个是一个叫corba的在github上的开源库,它的设计目的是提供一个编写/生成交互式命令程序的框架.</p>
+<p>简单的说,它就是可以添加命令和子命令的插件库,查看 gateway.go的源码可以发现</p>
+<pre><code>var (
+	rootCmd = &amp;cobra.Command{                 (1)
+		Use:        &quot;etcd&quot;,
+		Short:      &quot;etcd server&quot;,
+		SuggestFor: []string{&quot;etcd&quot;},
+	}
+)
+
+func init() {
+	rootCmd.AddCommand(newGatewayCommand())            (2)
+}
+
+// newGatewayCommand returns the cobra command for &quot;gateway&quot;.
+func newGatewayCommand() *cobra.Command {
+	lpc := &amp;cobra.Command{
+		Use:   &quot;gateway &lt;subcommand&gt;&quot;,
+		Short: &quot;gateway related command&quot;,
+	}
+	lpc.AddCommand(newGatewayStartCommand())           (3)
+
+	return lpc
+}
+
+func newGatewayStartCommand() *cobra.Command {
+	cmd := cobra.Command{
+		Use:   &quot;start&quot;,
+		Short: &quot;start the gateway&quot;,
+		Run:   startGateway,
+	}
+
+	cmd.Flags().StringVar(&amp;gatewayListenAddr, &quot;listen-addr&quot;, &quot;127.0.0.1:23790&quot;, &quot;listen address&quot;)
+	cmd.Flags().StringVar(&amp;gatewayDNSCluster, &quot;discovery-srv&quot;, &quot;&quot;, &quot;DNS domain used to bootstrap initial cluster&quot;)
+	cmd.Flags().BoolVar(&amp;gatewayInsecureDiscovery, &quot;insecure-discovery&quot;, false, &quot;accept insecure SRV records&quot;)
+	cmd.Flags().StringVar(&amp;gatewayCA, &quot;trusted-ca-file&quot;, &quot;&quot;, &quot;path to the client server TLS CA file.&quot;)
+
+	cmd.Flags().StringSliceVar(&amp;gatewayEndpoints, &quot;endpoints&quot;, []string{&quot;127.0.0.1:2379&quot;}, &quot;comma separated etcd cluster endpoints&quot;)
+
+	cmd.Flags().DurationVar(&amp;getewayRetryDelay, &quot;retry-delay&quot;, time.Minute, &quot;duration of delay before retrying failed endpoints&quot;)
+
+	return &amp;cmd
+}
+</code></pre><p>(1) 首先生成了一个<code>etcd</code>的命令
+(2) 添加了一个子命令 <code>gateway</code>
+(3) 接着又添加了一个子命令<code>start</code></p>
+<p>组合起来,是不是就是我们看到的<code>etcd gateway start</code>,这个命令就会去执行<code>Run</code>字段指向的函数,而<code>Short</code>是注释</p>
+<p>具体<code>cobra</code>用法可以查询相关文档</p>
+<h2 id="server启动">server启动</h2>
+<p>上面有提到<code>main()</code>函数里面调用了<code>startEtcdOrProxyV2()</code></p>
+<p>查看其代码，发现里面做了2件事情</p>
+<ul>
+<li>初始化配置文件</li>
+<li>根据数据目录的情况，启动进程(<code>startEtcd()</code>)Etcd Server或者代理进程(<code>startProxy()</code>,代理进程是和其他etcd节点交互的)</li>
+</ul>
+<p><code>startEtcd()</code>又调用了<code>embed.StartEtcd(cfg)</code>,这个即启动EtcdServer的函数。</p>
+<pre><code>func StartEtcd(inCfg *Config) (e *Etcd, err error) {
+	if err = inCfg.Validate(); err != nil {
+		return nil, err
+	}
+	serving := false
+	e = &amp;Etcd{cfg: *inCfg, stopc: make(chan struct{})}
+	cfg := &amp;e.cfg
+
+	······
+	return e, nil
+</code></pre><p>从函数的前面的代码可以看到，该函数入参是一个配置文件，返回值是一个<code>Etcd</code>的结构体指针，代表一个Etcd Server实例，但是不保证已经加入集群。</p>
+<p>进来先进行了入参的检查，<code>inCfg.Validate()</code>，里面需要注意的是
+<code>5*cfg.TickMs &gt; cfg.ElectionMs</code> ：选举超时时间必须大于五倍于心跳超时时间。
+<code>cfg.ElectionMs &gt; maxElectionMs</code> ：选举超时时间必须小于5000ms</p>
+<p>接着来看看<code>Etcd</code>的内容</p>
+<pre><code>type Etcd struct {
+	Peers   []*peerListener
+	Clients []net.Listener
+	// a map of contexts for the servers that serves client requests.
+	sctxs            map[string]*serveCtx
+	metricsListeners []net.Listener
+
+	Server *etcdserver.EtcdServer
+
+	cfg   Config
+	stopc chan struct{}
+	errc  chan error
+
+	closeOnce sync.Once
+}
+</code></pre><blockquote>
+</blockquote>
+<ul>
+<li>Peers和Clients都是监听器，允许多个goroutine同时连接，Peers用于内部member间通信，Clients用于外部通信</li>
+<li>cfg是配置参数</li>
+<li>Server为Etcd Server的核心配置</li>
+</ul>
+<p>后面会通过<code>rafthttp.NewListener()</code>把这两个Listener初始化创建</p>
+<p>下面初始化了<code>ServerConfig</code>结构体，这个是new一个 EtcdServer所需要的配置</p>
+<pre><code>    type ServerConfig struct {
+        // etcdserver 名称，对应flag &quot;name“
+        Name           string  
+        
+		// etcd 用于服务发现，无需知道具体etcd节点ip即可访问etcd 服务，对应flag  &quot;discovery&quot;
+        DiscoveryURL   string  
+        
+		// 供服务发现url的代理地址， 对应flag &quot;discovery-proxy&quot;
+        DiscoveryProxy string  
+        
+		// 由ip+port组成，默认DefaultListenClientURLs = &quot;http://localhost:2379&quot;; 
+        // 实际情况使用https schema，用以外部etcd client访问，对应flag &quot;listen-client-urls&quot;
+        ClientURLs     types.URLs 
+        
+		// 由ip+port组成，默认DefaultListenPeerURLs   = &quot;http://localhost:2380&quot;; 
+        // 实际生产环境使用http schema, 供etcd member 通信，对应flag &quot;peer-client-urls&quot;
+        PeerURLs       types.URLs 
+        
+		// 数据目录地址，为全路径，对应flag &quot;data-dir&quot;
+        DataDir        string   
+        
+		// DedicatedWALDir config will make the etcd to write the WAL to the WALDir
+        // rather than the dataDir/member/wal.
+        DedicatedWALDir     string
+        
+		// 默认是10000次事件做一次快照:DefaultSnapCount = 100000
+        // 可以作为调优参数进行参考，对应flag &quot;snapshot-count&quot;, 
+        SnapCount           uint64  
+        
+		// 默认是5，这是v2的参数，v3内只有一个db文件，
+        // DefaultMaxSnapshots = 5，对应flag &quot;max-snapshots&quot;
+        MaxSnapFiles        uint  
+        
+		// 默认是5，DefaultMaxWALs      = 5，表示最大存储wal文件的个数，
+        // 对应flag &quot;max-wals&quot;，保留的文件可以作为etcd-dump-logs工具进行debug使用。
+        MaxWALFiles         uint  
+        
+		// peerUrl 与 etcd name对应的map,由方法cfg.PeerURLsMapAndToken(&quot;etcd&quot;)生成。
+        InitialPeerURLsMap  types.URLsMap 
+        
+		// etcd 集群token, 对应flang &quot;initial-cluster-token&quot;
+        InitialClusterToken string 
+        
+		// 确定是否为新建集群，对应flag &quot;initial-cluster-state&quot;,
+        // 由方法func (cfg Config) IsNewCluster() bool { return cfg.ClusterState == ClusterStateFlagNew }确定；
+        NewCluster          bool 
+        
+		// 对应flag &quot;force-new-cluster&quot;,默认为false,若为true，
+        // 在生产环境内，一般用于含v2数据的集群恢复，
+        // 效果为以现有数据或者空数据新建一个单节点的etcd集群，
+        // 如果存在数据，则会清楚数据内的元数据信息，并重建只包含该etcd的元数据信息。
+        ForceNewCluster     bool 
+        
+		// member间通信使用的证书信息，若peerURL为https时使用，对应flag &quot;peer-ca-file&quot;,&quot;peer-cert-file&quot;, &quot;peer-key-file&quot;
+        PeerTLSInfo         transport.TLSInfo
+        
+		// raft node 发送心跳信息的超时时间。 &quot;heartbeat-interval&quot; 
+        TickMs           uint 
+        
+		// raft node 发起选举的超时时间，最大为5000ms maxElectionMs = 50000, 
+        // 对应flag &quot;election-timeout&quot;, 
+        // 选举时间与心跳时间在最佳实践内建议是10倍关系。
+        ElectionTicks    int 
+        
+		// etcd server启动的超时时间，默认为1s, 
+        // 由方法func (c *ServerConfig) bootstrapTimeout() time.Duration确定；
+        BootstrapTimeout time.Duration 
+
+        // 默认为0，单位为小时，主要为了方便用户快速查询，
+        // 定时对key进行合并处理，对应flag &quot;auto-compaction-retention&quot;,
+        // 由方法func NewPeriodic(h int, rg RevGetter, c Compactable) *Periodic确定，
+        // 具体compact的实现方法为：
+        //func (s *kvServer) Compact(ctx context.Context, r *pb.CompactionRequest) (*pb.CompactionResponse, error)
+        AutoCompactionRetention int  
+        
+		// etcd后端数据文件的大小，默认为2GB，最大为8GB, v3的参数，
+        // 对应flag  &quot;quota-backend-bytes&quot; ，具体定义：etcd\etcdserver\quota.go   
+        QuotaBackendBytes       int64 
+
+        StrictReconfigCheck bool
+
+        // ClientCertAuthEnabled is true when cert has been signed by the client CA.
+        ClientCertAuthEnabled bool
+
+        AuthToken string
+	}
+</code></pre><p>继续往下分析，发现<code>StartEtcd()</code>函数里面最关键的调用如下</p>
+<pre><code>	······
+
+	if e.Server, err = etcdserver.NewServer(srvcfg); err != nil {
+		return e, err
+	}
+
+    ······
+
+	e.Server.Start()
+
+	······
+</code></pre><p>这两个函数的具体实现都位于 <code>/etcdserver/server.go</code> 中</p>
+<p>首先看看<code>NewServer()</code>函数，代码很长，省略，其核心思路就是先判断是不是有<code>WAL</code>文件存在，然后根据两个条件：1、是否有WAL；2、是否新建集群； 来走不同流程，最后<code>startNode()</code>,<code>startNode()</code>里面就是创建WAL文件和调用raft协议的函数<code>raft.StartNode(c, peers)</code>来启动一个新的节点</p>
+<p><code>EtcdServer.start()</code>函数做了简单初始化之后，调用了<code>EtcdServer.run()</code>，该函数为EtcdServer运行的主函数</p>
+<p>主要逻辑有：</p>
+<p>初始化了<code>raftReadyHandler</code>,里面有2个函数回调，然后调用<code>raftNode.start()</code>函数来在一个新的goroutine启动一个raft节点</p>
+<p>然后是for循环，等待channel响应</p>
+
+        </div>
+
+        
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            没有标签
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="chenzongshu.github.io/chenzongshu.github.io">蜗牛龙门阵 By chenzongshu</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/chenzongshu.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="chenzongshu.github.io">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%90%AF%E5%8A%A8%E7%AF%87/" title="Etcd源码分析">Etcd源码分析</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="chenzongshu.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
