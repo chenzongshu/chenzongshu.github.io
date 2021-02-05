@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>容器 | 蜗牛龙门阵</title>
+    <meta property="og:title" content="容器 - 蜗牛龙门阵">
+    <meta property="og:type" content="article">
+        
+        
+    <meta name="Keywords" content="golang,java,博客,项目管理">
+    <meta name="description" content="容器">
+        
+    <meta name="author" content="chenzongshu">
+    <meta property="og:url" content="chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8/">
+    <link rel="shortcut icon" href='/chenzongshu.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/style.css'>
+    <link rel="alternate" type="application/rss+xml+xml" href="chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8/index.xml" title="蜗牛龙门阵" />
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="chenzongshu.github.io/chenzongshu.github.io">
+                        蜗牛龙门阵
+                    </a>
+                
+                <p class="description">专注容器等IT技术</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="" href="chenzongshu.github.io/chenzongshu.github.io">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <h3 class="archive-title">
+        包含标签
+        <span class="keyword">容器</span>
+        的文章
+    </h3>
+    
+
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/">容器江湖闲话</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年2月4日
+        </date>
+        
+        <div class="post-meta meta-category">
+            |
+            
+            <a href='/chenzongshu.github.io/categories/kubernetes'>kubernetes</a>
+            
+        </div>
+        
+        <div class="post-content">
+            引子 江湖永远不缺乏刀光剑影，鼓角争鸣。可能杰夫·贝佐斯不曾想到，他推出的AWS成了全球云计算IaaS和PaaS的霸主，从根本上改变了IT江湖的格局。
+但是各路诸侯从未放弃自己的勃勃野心
+近几年，云原生概念的提出，容器和kubernetes已经被炒作的非常火热了，甚至传统行业都开始拥抱容器，采用容器平台作为其基础架构
+容器这片江湖也是经历过各方大佬的博弈厮杀，才形成了这样的局面，这回书，我们就来摆摆龙门阵，聊聊大佬们的江湖
+风起微末 2013年，PaaS盛行于江湖，
+一个名字叫dotCloud的小”帮派“凭着东拼西凑的招式混口饭吃，在混不下去之际，决定把自己的武功心法公布于众，开源自己的容器项目Docker，没想到，短短几个月，各路豪强竟然纷纷来投，凭借的，就是自己发明的新招式：Docker镜像
+PaaS的武器就是可执行程序加上启停脚本，常常为不同环境需要折腾不同配置的问题搞的焦头烂额，而Docker镜像打包了一个文件系统和目录，包含了你所需要的所有依赖，就这一个小招式，打通了开发者应用部署的任督二脉，从此踏上争霸之路。
+金鳞岂是池中物，一遇风云便化龙
+群雄争霸 Docker虽然风头无双，但是帮派内部人士一直有所担心，毕竟Docker只是底层，是内功心法，各位大侠真正愿意是付费是产品，是平台，野蛮生长的Docker当然不甘心做垫脚石，于是乎把主意打上了其他人的蛋糕。
+Docker接着发布了Swarm、Compose、Machine三板斧，想吞下容器生态圈。同时，2014年底，因为Docker意欲染指更多容器平台能力，Docker和另一大势力CoreOS决裂。
+CoreOS的核心招式就是提供定制化OS，分布式部署和管理节点，本来想把Docker集成到其中，做了很多贡献，立下了汗马功劳，坐第二把交椅。反出梁山之后，发布了rkt，不过没掀起多大浪花就被拍死了。
+老牌豪强Mesos也看准了这波容器化浪潮，推出了Marathon项目，打出了mesos + marathon + docker的组合拳，其核心的资源调度mesos框架又是久经沙场的考验，于是乎有一种振臂一呼，天下英雄群起响应的声音。我前东家至今还有用这个做的容器平台，上面跑了4w容器实例。
+坐第三把交椅的Redhat也是Docker早期的重要贡献者，不满Docker的平台化战略而退出。虽然Redhat在PaaS浪潮中没有多少牌可以打，但是其本身深谙开源之道，在OS方面有较大话语权，这也为Docker的衰败埋下了了伏笔，因为Redhat收购CoreOS之后，在Kubernetes的累计PR贡献榜上足有15541个，排第三的华为才3111（排第一个的谷歌是36371），可谓江湖报仇，三年不晚。……
+            <p class="readmore"><a href="chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/">阅读全文</a></p>
+        </div>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/">六、监控体系</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年1月21日
+        </date>
+        
+        <div class="post-meta meta-category">
+            |
+            
+            <a href='/chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA'>容器平台搭建</a>
+            
+        </div>
+        
+        <div class="post-content">
+            前言 监控也是运维体系中的重要的一环，云原生的监控体系基本是基于Promethus为核心的体系打造，这里我们使用kube-promethus项目
+kube-prometheus 是一整套监控解决方案，它使用 Prometheus 采集集群指标，Grafana 做展示，包含如下组件：
+ The Prometheus Operator Highly available Prometheus Highly available Alertmanager Prometheus node-exporter Prometheus Adapter for Kubernetes Metrics APIs （k8s-prometheus-adapter） kube-state-metrics Grafana  部署 安装 下载，注意不同版本对应不同Kubernetes版本，注意切换版本……
+            <p class="readmore"><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/">阅读全文</a></p>
+        </div>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/">二、kubeadm安装Kubernetes</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年6月15日
+        </date>
+        
+        <div class="post-meta meta-category">
+            |
+            
+            <a href='/chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA'>容器平台搭建</a>
+            
+        </div>
+        
+        <div class="post-content">
+            准备 禁用swap Kubernetes 1.8开始要求必须禁用Swap，如果不关闭，默认配置下kubelet将无法启动。
+vim /etc/fstab # / was on /dev/sda1 during installation UUID=8cc33106-20fc-43b7-ad52-298eed8ccae6 / ext4 errors=remount-ro 0 1 #/swapfile none swap sw 0 0 把swapfile行注释掉后执行……
+            <p class="readmore"><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/">阅读全文</a></p>
+        </div>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/">五、EFK</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年5月1日
+        </date>
+        
+        <div class="post-meta meta-category">
+            |
+            
+            <a href='/chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA'>容器平台搭建</a>
+            
+        </div>
+        
+        <div class="post-content">
+            前言 在私有云平台中，日志系统也是重要的一部分，采集收集归纳是必不可少的，在kubernetes容器云中，我们采用标准的EFK来集成。
+日志系统有多种套件，ELK（Elasticsearch、Logstash、Kibana）和EFK（Elasticsearch、Filebeat/Fluent、Kibana）, 其中ES是日志存储分析的核心引擎，在搜索领域应用也非常广泛， Logstash/Filebeat/Fluent是日志的采集端，不过Filebeat/Fluent更加轻量级，对资源消耗更小，各大公有云厂商都是自研的采集插件
+在大型的日志系统中，日志量过大时，ES前端往往会集成kafka或者redis，用于缓存日志数据。在私有云中，我们只需要ES配合采集端加上Kibana显示就可以了
+ES安装 为了简化过程我们通过Helm来安装ES, 官方chart地址为 https://github.com/elastic/helm-charts ， 可以从helm的repo源下载也可以直接从github上下载chart
+增加官方repo源地址
+helm repo add elastic https://helm.elastic.co 下载chart
+helm fetch elastic/elasticsearch 或者从github下载对应分支，这里采用github上下载的chart……
+            <p class="readmore"><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/">阅读全文</a></p>
+        </div>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/">四、Harbor镜像仓库</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年4月17日
+        </date>
+        
+        <div class="post-meta meta-category">
+            |
+            
+            <a href='/chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA'>容器平台搭建</a>
+            
+        </div>
+        
+        <div class="post-content">
+            我们在私有云中，往往需要构建自己的私有镜像，以提高镜像下载速度，而且结合CICD流程，方便构建流水线, 这里我们使用Harbor, 比起Docker原生的registry, 增加了权限管理, 镜像同步等功能, 比较适合生产应用
+Harbor官网有两种搭建方式 , 一种是使用Helm Chart, 一种是用docker compose
+对应的, 使用Chart来搭建的, 就是搭建在集群内部, docker compose搭建在集群外部
+Kubernetes搭建 添加仓库 helm repo add harbor https://helm.……
+            <p class="readmore"><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/">阅读全文</a></p>
+        </div>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/">三、Helm和Ingress</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年4月11日
+        </date>
+        
+        <div class="post-meta meta-category">
+            |
+            
+            <a href='/chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA'>容器平台搭建</a>
+            
+        </div>
+        
+        <div class="post-content">
+            前言 在第二篇里面，我们安装了kubernetes集群和calico网络组件，一个基本的kubernetes集群已经能够正常工作了，但是在生产实际中，这是远远不够的，这篇里面，我们来安装Helm、ingress组件、Harbor、EFK、prometheus
+为了方便，我们使用Helm的chart来安装 ingress、harbor、EFK和Prometheus
+Helm 安装 可以到GitHub官网下载： https://github.com/helm/helm/releases ， 选择对应的版本即可，我们为了方便安装Helm3.X的版本
+注意：
+ Helm 3.X只有一个客户端, 必须放到可以使用kubectl的环境 Helm 2.X有服务端tiller，提供Restful接口，可以方便自有的平台对接  helm仓库 首次安装 helm 3 是没有指定默认仓库的。需要手动疯狂添加仓库才可以获取到程序包。可以用下面命令查看……
+            <p class="readmore"><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/">阅读全文</a></p>
+        </div>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/">一、容器云架构介绍</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年4月10日
+        </date>
+        
+        <div class="post-meta meta-category">
+            |
+            
+            <a href='/chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA'>容器平台搭建</a>
+            
+        </div>
+        
+        <div class="post-content">
+            前言 以docker和kubernetes为代表的的容器技术现在在市场上接受度越来越高，业界现在也有较多成熟产品，公有云有阿里华为腾通，私有云有OpenShift，才云，青云kubesphere，Rancher，灵雀云都做的不错， 为什么我们还折腾自建的容器平台？
+ 1、自己搭建过的东西更加有掌控力，据我交流，不少公司在体量到了一定程度之后都走上了自建的道路 2、自己搭建过后才对整体框架有了一个清晰的认知。  主要是结合自己的理解和实践，手把手教还不太熟悉容器的同学搭建一套自己的容器平台
+什么是容器云 不想去拷贝网上的各种文章，简单说下自己的理解，VM和容器的优劣不想过多讨论，但是谷歌错过了云计算的浪潮，让AWS占据先机之后，大力推动容器技术，也是想争夺话语权。至于docker和各个巨头的腥风血雨，更是一言难尽。
+现在的容器云标准几乎就是以kubernetes为编排工具调度容器运行到虚拟机或者物理机上，对计算资源进行编排的一套技术，最后取了一个牛掰哄哄的名字：云原生 （虽然云原生是Pivotal提出的，但是谷歌成立的CNCF把这概念推广开）
+业界主流容器云 这里特指私有云，当然私有云也可以搭建在公有云服务器上，组成混合云
+总体来说，各家技术框架大同小异，都是围绕着kubernetes生态做了挺多外围工作，
+  OpenShift
+红帽的技术实力毋庸置疑，OpenShift 3.x和4.x部署架构区别较大，特别是4.x，OS必须为CoreOS，容器运行时也是主推rkt，虽然做了不少优化，用了25个operator来部署，对于自行运维，想了解部署、架构、细节的朋友实在是太不友好，问题定位较麻烦，多说一句，4.x必须联网才能部署……
+            <p class="readmore"><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/">阅读全文</a></p>
+        </div>
+    </article>
+    
+
+    
+
+
+
+
+
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="chenzongshu.github.io/chenzongshu.github.io">蜗牛龙门阵 By chenzongshu</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/chenzongshu.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="chenzongshu.github.io">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/" title="容器江湖闲话">容器江湖闲话</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/" title="六、监控体系">六、监控体系</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/" title="五、EFK">五、EFK</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/" title="四、Harbor镜像仓库">四、Harbor镜像仓库</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/" title="三、Helm和Ingress">三、Helm和Ingress</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/" title="一、容器云架构介绍">一、容器云架构介绍</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Etcd源码分析之磁盘写入及操作">Etcd源码分析之磁盘写入及操作</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/" title="Etcd源码分析之存储">Etcd源码分析之存储</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/" title="Etcd源码分析之put流程">Etcd源码分析之put流程</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="chenzongshu.github.io/categories/etcd/">Etcd (6)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/kubernetes/">kubernetes (1)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA/">容器平台搭建 (6)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="chenzongshu.github.io/tags/etcd/">Etcd</a>
+    
+    <a href="chenzongshu.github.io/tags/kubernetes/">kubernetes</a>
+    
+    <a href="chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8/">容器</a>
+    
+    <a href="chenzongshu.github.io/tags/%E6%BA%90%E7%A0%81/">源码</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="chenzongshu.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

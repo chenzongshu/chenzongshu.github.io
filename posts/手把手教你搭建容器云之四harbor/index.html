@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>四、Harbor镜像仓库 | 蜗牛龙门阵</title>
+    <meta property="og:title" content="四、Harbor镜像仓库 - 蜗牛龙门阵">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2020-04-17T00:00:00&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-04-17T00:00:00&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,java,博客,项目管理">
+    <meta name="description" content="四、Harbor镜像仓库">
+        
+    <meta name="author" content="chenzongshu">
+    <meta property="og:url" content="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/">
+    <link rel="shortcut icon" href='/chenzongshu.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="chenzongshu.github.io/chenzongshu.github.io">
+                        蜗牛龙门阵
+                    </a>
+                
+                <p class="description">专注容器等IT技术</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="" href="chenzongshu.github.io/chenzongshu.github.io">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#添加仓库">添加仓库</a></li>
+    <li><a href="#下载chart">下载Chart</a></li>
+    <li><a href="#修改配置文件">修改配置文件</a></li>
+    <li><a href="#创建pv">创建PV</a></li>
+    <li><a href="#创建harbor-release">创建Harbor Release</a></li>
+    <li><a href="#访问">访问</a></li>
+    <li><a href="#客户端登录">客户端登录</a>
+      <ul>
+        <li><a href="#免密登录">免密登录</a></li>
+        <li><a href="#加密登录">加密登录</a></li>
+      </ul>
+    </li>
+  </ul>
+
+  <ul>
+    <li><a href="#下载">下载</a></li>
+    <li><a href="#配置">配置</a></li>
+    <li><a href="#安装">安装</a></li>
+    <li><a href="#卸载">卸载</a></li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">四、Harbor镜像仓库</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年4月17日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA'>容器平台搭建</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>我们在私有云中，往往需要构建自己的私有镜像，以提高镜像下载速度，而且结合CICD流程，方便构建流水线, 这里我们使用Harbor, 比起Docker原生的registry, 增加了权限管理, 镜像同步等功能, 比较适合生产应用</p>
+<p>Harbor官网有两种搭建方式 , 一种是使用Helm Chart, 一种是用docker compose</p>
+<p>对应的, 使用Chart来搭建的, 就是搭建在集群内部, docker compose搭建在集群外部</p>
+<h1 id="kubernetes搭建">Kubernetes搭建</h1>
+<h2 id="添加仓库">添加仓库</h2>
+<pre><code>helm repo add harbor https://helm.goharbor.io
+</code></pre><h2 id="下载chart">下载Chart</h2>
+<p>下载并解压</p>
+<pre><code>helm pull harbor/harbor
+
+tar -zxvf harbor-1.3.1.tgz
+</code></pre><h2 id="修改配置文件">修改配置文件</h2>
+<pre><code>vim values.yaml
+
+expose:
+  type: ingress
+  tls:
+    commonName: &quot;czs.harbor.org&quot;
+
+  ingress:
+    hosts:
+      core: czs.harbor.org
+      
+externalURL: https://czs.harbor.org
+
+harborAdminPassword: &quot;czs123&quot;
+</code></pre><h2 id="创建pv">创建PV</h2>
+<p>我们使用NFS来创建PV， 观察value.yaml文件，可以知道使用了5个PVC，3个1G的，2个5G的</p>
+<p>在NFS服务器上创建5个文件夹（安装步骤省略，可以见我另外的文章）</p>
+<pre><code>[root@k8s-system ~]# mkdir -p /data/nfs/harbor/1g-1
+[root@k8s-system ~]# mkdir -p /data/nfs/harbor/1g-2
+[root@k8s-system ~]# mkdir -p /data/nfs/harbor/1g-3
+[root@k8s-system ~]# mkdir -p /data/nfs/harbor/5g-1
+[root@k8s-system ~]# mkdir -p /data/nfs/harbor/5g-2
+
+# 修改目录权限
+chmod -R 777 /data/nfs/harbor
+</code></pre><p>新建PV资源文件 <code>pv-harbor-1g.yaml</code></p>
+<pre><code>apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: pv-harbor-1g-1
+spec:
+    capacity:
+        storage: 1Gi
+    volumeMode: Filesystem
+    accessModes:
+    -  ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    nfs:
+        server: 192.168.152.103
+        path: /data/nfs/harbor/1g-1
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: pv-harbor-1g-2
+spec:
+    capacity:
+        storage: 1Gi
+    volumeMode: Filesystem
+    accessModes:
+    -  ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    nfs:
+        server: 192.168.152.103
+        path: /data/nfs/harbor/1g-2
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: pv-harbor-1g-3
+spec:
+    capacity:
+        storage: 1Gi
+    volumeMode: Filesystem
+    accessModes:
+    -  ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    nfs:
+        server: 192.168.152.103
+        path: /data/nfs/harbor/1g-3
+</code></pre><p>然后创建小规格PV</p>
+<pre><code>kubectl apply -f pv-harbor-1g.yaml
+</code></pre><p>小规格 pv 创建结束后，注意查看一下创建状态，等到状态都为 Bound 后，再创建大规格 pv</p>
+<pre><code>apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: pv-harbor-5g-1
+spec:
+    capacity:
+        storage: 5Gi
+    volumeMode: Filesystem
+    accessModes:
+    -  ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    nfs:
+        server: 192.168.152.103
+        path: /data/nfs/harbor/5g-1
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: pv-harbor-5g-2
+spec:
+    capacity:
+        storage: 5Gi
+    volumeMode: Filesystem
+    accessModes:
+    -  ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    nfs:
+        server: 192.168.152.103
+        path: /data/nfs/harbor/5g-2
+</code></pre><h2 id="创建harbor-release">创建Harbor Release</h2>
+<p>创建Harbor命令空间</p>
+<pre><code>kubectl create ns harbor
+</code></pre><p>安装Harbor</p>
+<pre><code>## 第一个 harbor 是 release；第二个是命名空间；第三个是解压后根目录
+
+helm install harbor -n harbor harbor
+</code></pre><p>然后检查PVC有没有bound</p>
+<pre><code>kubectl get pvc -n harbor
+</code></pre><h2 id="访问">访问</h2>
+<p>私有云内部别忘了配置域名解析, 然后使用浏览器访问 <code>https://czs.harbor.org</code> 即可</p>
+<h2 id="客户端登录">客户端登录</h2>
+<h3 id="免密登录">免密登录</h3>
+<p>docker可以配置免数字证书登录,修改 <code>/etc/docker/daemon.json</code> 文件</p>
+<pre><code>{
+    &quot;insecure-registries&quot; : [&quot;czs.harbor.org&quot;]
+}
+</code></pre><h3 id="加密登录">加密登录</h3>
+<p>获取数字证书</p>
+<pre><code>kubectl get secret harbor-harbor-ingress -n harbor  -o yaml
+</code></pre><p>解码数字证书值（因为 secret 中证书信息值是采用 base64 编码过的，所以你在使用前还需要进行解码）</p>
+<pre><code>echo '&lt;ca.crt&gt;' | base64 -d &gt; ca.crt  # ca.crt就是上面yaml中 ca.crt的值
+</code></pre><p>在 docker 证书根目录下创建你 ingress 指定域名目录（比如我这里就是 czs.harbor.org），并将上面生成的证书拷贝到此处</p>
+<pre><code>mkdir -p /etc/docker/cert.d/jiuxi.harbor.org &amp;&amp; mv ca.crt /etc/docker/cert.d/czs.harbor.org
+</code></pre><h1 id="docker-compose安装">Docker-compose安装</h1>
+<p>最小2C4G40G, 推荐4C8G160G,  提前安装好docker和docker-compose</p>
+<p>docker-compose可以去 <code>https://github.com/docker/compose/releases/</code>下载</p>
+<p>使用端口如下</p>
+<ul>
+<li>
+<p>443: Harbor门户和核心API的HTTPS请求</p>
+</li>
+<li>
+<p>4443: 只有在启用Notary时才需要连接到Docker Content Trust服务</p>
+</li>
+<li>
+<p>80: Harbor门户和核心API的HTTP请求</p>
+</li>
+</ul>
+<h2 id="下载">下载</h2>
+<p>下载离线安装包 <code>https://github.com/goharbor/harbor/releases</code> , 可以得到一个600M的离线安装包</p>
+<p>解压</p>
+<pre><code>tar xvf harbor-offline-installer-v1.10.2.tgz
+</code></pre><p>默认harbor是没有配置证书的, 这里我们简化下流程, 不配置证书, 如果需要配置证书, 参考Harbor官网地址 <code>https://goharbor.io/docs/1.10/install-config/configure-https/</code></p>
+<h2 id="配置">配置</h2>
+<p>编辑harbor.yml文件</p>
+<pre><code># hostname设置访问地址，可以使用ip、域名，不可以设置为127.0.0.1或localhost
+hostname: harbor.phpdev.com
+
+port: 9000
+harbor_admin_password: czs123
+
+# The location to store harbor's data
+data_volume: /var/harbor/data
+# The directory to store store log
+location: /var/log/harbor
+
+#如果是不启动HTTPS， 必须把这些注释掉
+#https:
+  # https port for harbor, default is 443
+#  port: 443
+  # The path of cert and key files for nginx
+#  certificate: /your/certificate/path
+#  private_key: /your/private/key/path
+
+
+</code></pre><h2 id="安装">安装</h2>
+<p>执行<code>install.sh</code> ，经过一系列安装, Harbor安装完成， 最后的提示如下</p>
+<pre><code>[Step 5]: starting Harbor ...
+Creating network &quot;harbor_harbor&quot; with the default driver
+Creating harbor-log ... done
+Creating redis         ... done
+Creating harbor-portal ... done
+Creating registry      ... done
+Creating registryctl   ... done
+Creating harbor-db     ... done
+Creating harbor-core   ... done
+Creating harbor-jobservice ... done
+Creating nginx             ... done
+✔ ----Harbor has been installed and started successfully.----
+</code></pre><h2 id="卸载">卸载</h2>
+<p>进入改文件夹，执行 <code>docker-compose down</code></p>
+
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/">三、Helm和Ingress</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/">一、容器云架构介绍</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">Etcd源码分析之磁盘写入及操作</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/">Etcd源码分析之存储</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/">Etcd源码分析之put流程</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/chenzongshu.github.io/tags/kubernetes'>kubernetes</a></li>
+                
+                <li><a href='/chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8'>容器</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="chenzongshu.github.io/chenzongshu.github.io">蜗牛龙门阵 By chenzongshu</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/chenzongshu.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="chenzongshu.github.io">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/" title="容器江湖闲话">容器江湖闲话</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/" title="六、监控体系">六、监控体系</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/" title="五、EFK">五、EFK</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/" title="四、Harbor镜像仓库">四、Harbor镜像仓库</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/" title="三、Helm和Ingress">三、Helm和Ingress</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/" title="一、容器云架构介绍">一、容器云架构介绍</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Etcd源码分析之磁盘写入及操作">Etcd源码分析之磁盘写入及操作</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/" title="Etcd源码分析之存储">Etcd源码分析之存储</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/" title="Etcd源码分析之put流程">Etcd源码分析之put流程</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="chenzongshu.github.io/categories/etcd/">Etcd (6)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/kubernetes/">kubernetes (1)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA/">容器平台搭建 (6)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="chenzongshu.github.io/tags/etcd/">Etcd</a>
+    
+    <a href="chenzongshu.github.io/tags/kubernetes/">kubernetes</a>
+    
+    <a href="chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8/">容器</a>
+    
+    <a href="chenzongshu.github.io/tags/%E6%BA%90%E7%A0%81/">源码</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="chenzongshu.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

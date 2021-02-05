@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>容器江湖闲话 | 蜗牛龙门阵</title>
+    <meta property="og:title" content="容器江湖闲话 - 蜗牛龙门阵">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-02-04T00:00:00&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-02-04T00:00:00&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,java,博客,项目管理">
+    <meta name="description" content="容器江湖闲话">
+        
+    <meta name="author" content="chenzongshu">
+    <meta property="og:url" content="chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/">
+    <link rel="shortcut icon" href='/chenzongshu.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="chenzongshu.github.io/chenzongshu.github.io">
+                        蜗牛龙门阵
+                    </a>
+                
+                <p class="description">专注容器等IT技术</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="" href="chenzongshu.github.io/chenzongshu.github.io">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents"></nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">容器江湖闲话</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年2月4日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/chenzongshu.github.io/categories/kubernetes'>kubernetes</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <h1 id="引子">引子</h1>
+<p>江湖永远不缺乏刀光剑影，鼓角争鸣。可能杰夫·贝佐斯不曾想到，他推出的AWS成了全球云计算IaaS和PaaS的霸主，从根本上改变了IT江湖的格局。</p>
+<p>但是各路诸侯从未放弃自己的勃勃野心</p>
+<p>近几年，云原生概念的提出，容器和kubernetes已经被炒作的非常火热了，甚至传统行业都开始拥抱容器，采用容器平台作为其基础架构</p>
+<p>容器这片江湖也是经历过各方大佬的博弈厮杀，才形成了这样的局面，这回书，我们就来摆摆龙门阵，聊聊大佬们的江湖</p>
+<h1 id="风起微末">风起微末</h1>
+<p>2013年，PaaS盛行于江湖，</p>
+<p>一个名字叫dotCloud的小”帮派“凭着东拼西凑的招式混口饭吃，在混不下去之际，决定把自己的武功心法公布于众，开源自己的容器项目Docker，没想到，短短几个月，各路豪强竟然纷纷来投，凭借的，就是自己发明的新招式：Docker镜像</p>
+<p>PaaS的武器就是可执行程序加上启停脚本，常常为不同环境需要折腾不同配置的问题搞的焦头烂额，而Docker镜像打包了一个文件系统和目录，包含了你所需要的所有依赖，就这一个小招式，打通了开发者应用部署的任督二脉，从此踏上争霸之路。</p>
+<p>金鳞岂是池中物，一遇风云便化龙</p>
+<h1 id="群雄争霸">群雄争霸</h1>
+<p>Docker虽然风头无双，但是帮派内部人士一直有所担心，毕竟Docker只是底层，是内功心法，各位大侠真正愿意是付费是产品，是平台，野蛮生长的Docker当然不甘心做垫脚石，于是乎把主意打上了其他人的蛋糕。</p>
+<p>Docker接着发布了Swarm、Compose、Machine三板斧，想吞下容器生态圈。同时，2014年底，因为Docker意欲染指更多容器平台能力，Docker和另一大势力CoreOS决裂。</p>
+<p>CoreOS的核心招式就是提供定制化OS，分布式部署和管理节点，本来想把Docker集成到其中，做了很多贡献，立下了汗马功劳，坐第二把交椅。反出梁山之后，发布了rkt，不过没掀起多大浪花就被拍死了。</p>
+<p>老牌豪强Mesos也看准了这波容器化浪潮，推出了Marathon项目，打出了mesos + marathon + docker的组合拳，其核心的资源调度mesos框架又是久经沙场的考验，于是乎有一种振臂一呼，天下英雄群起响应的声音。我前东家至今还有用这个做的容器平台，上面跑了4w容器实例。</p>
+<p>坐第三把交椅的Redhat也是Docker早期的重要贡献者，不满Docker的平台化战略而退出。虽然Redhat在PaaS浪潮中没有多少牌可以打，但是其本身深谙开源之道，在OS方面有较大话语权，这也为Docker的衰败埋下了了伏笔，因为Redhat收购CoreOS之后，在Kubernetes的累计PR贡献榜上足有15541个，排第三的华为才3111（排第一个的谷歌是36371），可谓江湖报仇，三年不晚。</p>
+<p>花开两朵，各表一支，容器这套功法一出，吸引了江湖真正的豪门的注意，那就是基础设施领域的大佬谷歌。这位大佬在IaaS领域被AWS和Azure打的毫无招架之力，从2008年加入公有云的擂台之后，直到2019年市场占有率仅5.8%。于是想从容器这个领域弯道超车，2014年6月用Go语言重写了自己的Borg项目，命名为Kubernetes并开源出去，意思是舵手，可谓寄予厚望。</p>
+<p>天生自带豪门光环的Kubernetes一登场就吸引了各路人马的目光，其思想内核Borg在谷歌内部已经经历过大规模的考验，沉淀了谷歌多年的底蕴，迅速受到各方的热捧。</p>
+<p>至此Docker，Mesos，Kubernetes三分天下，问容器江湖，谁主沉浮？</p>
+<h1 id="定鼎天下">定鼎天下</h1>
+<p>Docker的野蛮生长和快速崛起，让Docker对其项目的内功心法保持了绝对的权威和发言权，其一言堂的模式引发了其他大佬的不满，其他的江湖散人如果参加过社区的feature讨论，应该也会对一个feature动辄讨论2，3个月情况感到厌恶。而Docker在不同场合挑战其他大佬（CoreOS，Redhat甚至微软谷歌）的利益，终于让行会联合绞杀。</p>
+<p>2015年，大佬们开始“肢解”Docker，手段非常经典，成立了一个中立基金会OCI。Docker也牵头将Libcontainer捐出，并改名RunC，然后以 RunC 为依据，大家共同制定一套容器和镜像的标准和规范。本意OCI标准制定是想把运行时和镜像实现从Docker中剥离出来。</p>
+<p>但是Docker虚晃一枪，完全不去推动，使得OCI效率相当地下，形同虚设。</p>
+<p>但是老江湖岂是等闲之辈，眼看着 OCI 并没能改变 Docker 公司在容器领域一家独大的现状，Google 和 RedHat 等大佬于是又生一计。共同牵头发起了后来大名鼎鼎的 CNCF (Cloud Native Computing Foundation)基金会。目的就是建立以Kubernetes为核心的，有基础设施领域大佬主导的社区。</p>
+<p>这一箭双雕，射向Docker和Mesos的命门。Swarm的精髓就是和Docker无缝接入，Mesos的奥义就是擅长大规模集群调度和管理。但是Google选择把公司在容器化基础设施领域多年来实践经验的沉淀与升华融入Kubernetes中。避开对手长处，直指要害。</p>
+<p>然后CNCF迅速吸纳容器江湖圈其他帮派，带着大家一块吃香喝辣，大秤分金。</p>
+<p>面对老江湖的步步紧逼，菜鸟Docker决定铤而走险，豪赌一把，放弃Swarm，把Swarm内置到Docker中（Etcd也集成进去了），想法很美好，但是实际研发实力和大佬谷歌差太多太多，我是在生产用过半年的Swarm，问题太多。</p>
+<p>而Kubernetes反其道而行之，更加开放，从API到容器运行的每一层都暴露插件机制，让各使用者可以通过插件介入流程的各个阶段，做二次创新。社区一下子呈现“百花齐放”的繁荣。</p>
+<p>2017年，Docker投降认输，将运行时Container捐赠给CNCF社区，然后将Docker项目改名为Moby，交给社区自行维护。</p>
+<p>到此Kubernetes定鼎天下，成了容器技术的代名词，然后一步步剔除Docker在江湖中的影响力，2020.12更是宣布在1.23版本之后移除Docker</p>
+<p>或许很多年以后，Docker可以给后辈说，江湖虽然不见哥，但是还留传这哥的传说。</p>
+<p>天下风云出我辈，一入江湖岁月催。皇图霸业谈笑中，不胜人生一场醉。</p>
+<h1 id="秘密武器">秘密武器</h1>
+<p>Kubernetes为什么能打败Docker和Mesos，除了自身的豪门底蕴和江湖环境，其中的秘密就在于它的立意确实高了一个层次。</p>
+<p>Docker Swarm只解决了调度容器的问题，而且质量还不稳定，略显稚嫩，小规模集群都问题不断；</p>
+<p>而Mesos只是借着容器的浪潮继续甩卖Mesos产品，没有创新，周边也没有发力开发，很快就被江湖抛弃，2019年，IT大佬，Mesos代言人Twitter放弃Mesos转向Kubernetes，同年Mesosphere自身也放弃了，改名D2IQ并转向Kubernetes。</p>
+<p>在谷歌帝国中，Borg可谓是帝国之基石，因为其一直把大规模运行机器和任务的能力视为自己的秘密武器。时不时公布的功法心要（论文）也成了开源界山寨的对象。如 MapReduce催生了Hadoop，BigTable公布出来后，一大堆“NoSQL”数据库就如雨后春笋般冒出来了</p>
+<p>为什么要把帝国基石的秘密公布出去？我以为，AWS在IaaS和PaaS上的成功让谷歌感到了巨大的压力，容器技术的兴起也让谷歌感到了弯道超车的希望，过往安卓的成就也让谷歌深谙话语权的威力，可以利用内部10多年容器管理的经验领导社区的方向（Cgroup就是谷歌提到内核里面的）。</p>
+<p>那Kubernetes的奥义是什么呢？</p>
+<p><strong>对于大规模集群中各种关系的抽象和定义，分类处理，这才是Kubernetes的核心奥义。</strong></p>
+<p>Borg 的研究人员在论文中提到的一个非常重要 的观点:<code>运行在大规模集群中的各种任务之间，实际上存在着各种各样的关系。这些关系的处理，才是作业编排和管理系统最困难的地方。</code></p>
+<p>Docker Swarm和Mesos差不多，Swarm有个Service，Mesos有个Application，基本就是容器的副本集。比如，一个 Web 应 用与数据库之间的访问关系，一个负载均衡器和它的后端服务之间的代理关系，怎么在系统内部体现和编排？如果遇到这种应用的升级，策略是什么？Swarm和Mesos没有给出满意的答案。</p>
+<p>而Kubernetes则是以Pod为核心，延展出了Deployment，Statuefulset、DaemonSet、Job、Cronjob、ReplicaSet，Service等各种概念，覆盖了应用的各种场景，而且Pod也不是简单的容器，而是一组共享Namespace的容器的集合。</p>
+<p>这种逻辑上的应用关系的抽象和声明式的API的定义，就是Kubernetes先进之处。</p>
+
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/">六、监控体系</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/">二、kubeadm安装Kubernetes</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/">五、EFK</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/">四、Harbor镜像仓库</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/">三、Helm和Ingress</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/chenzongshu.github.io/tags/kubernetes'>kubernetes</a></li>
+                
+                <li><a href='/chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8'>容器</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="chenzongshu.github.io/chenzongshu.github.io">蜗牛龙门阵 By chenzongshu</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/chenzongshu.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="chenzongshu.github.io">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/" title="容器江湖闲话">容器江湖闲话</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/" title="六、监控体系">六、监控体系</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/" title="五、EFK">五、EFK</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/" title="四、Harbor镜像仓库">四、Harbor镜像仓库</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/" title="三、Helm和Ingress">三、Helm和Ingress</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/" title="一、容器云架构介绍">一、容器云架构介绍</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Etcd源码分析之磁盘写入及操作">Etcd源码分析之磁盘写入及操作</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/" title="Etcd源码分析之存储">Etcd源码分析之存储</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/" title="Etcd源码分析之put流程">Etcd源码分析之put流程</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="chenzongshu.github.io/categories/etcd/">Etcd (6)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/kubernetes/">kubernetes (1)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA/">容器平台搭建 (6)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="chenzongshu.github.io/tags/etcd/">Etcd</a>
+    
+    <a href="chenzongshu.github.io/tags/kubernetes/">kubernetes</a>
+    
+    <a href="chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8/">容器</a>
+    
+    <a href="chenzongshu.github.io/tags/%E6%BA%90%E7%A0%81/">源码</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="chenzongshu.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

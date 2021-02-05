@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Etcd on 蜗牛龙门阵</title>
+    <link>chenzongshu.github.io/tags/etcd/</link>
+    <description>Recent content in Etcd on 蜗牛龙门阵</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Thu, 08 Aug 2019 00:00:00 +0000</lastBuildDate><atom:link href="chenzongshu.github.io/tags/etcd/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Etcd源码分析之磁盘写入及操作</title>
+      <link>chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</link>
+      <pubDate>Thu, 08 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
+      <description>Etcd磁盘要求 官方原文链接: https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/hardware.md
+Etcd对磁盘写入延时非常敏感
+高速磁盘是保证etcd部署性能和稳定性的关键因素。
+慢磁盘会增加etcd的请求延时，潜在影响集群的稳定性。因为etcd一致性协议依赖于元数据写入持久化日志，并且要求集群大多数成员将请求写入磁盘。此外，etcd还会到磁盘上增量检查集群的状态，从而可以截断日志。如果这些写操作花费太长的时间，心跳就可能会超时，触发选举操作，从而破坏集群的稳定性。
+etcd对磁盘写入延时非常敏感。通常稳定达到50 IOPS（比如：一个7200转的磁盘）是必须的，对于负载很高的集群，推荐能稳定达到500 IOPS（比如：一个典型的本地SSD盘或者高性能的虚拟块设备盘）。注意，大多数云服务提供商发布的是瞬时并发IOPS，并不是稳定的IOPS，瞬时并发IOPS可能十倍于稳定连续的IOPS（说明：因为瞬时并发IOPS可能会写缓存，或者测试时无其他用户竞争磁盘资源，所以会很高，当测试时间很长后，就会测试出设备的真实IOPS能力，这个在国内云厂商基本没有这个问题）。测试稳定连续IOPS，我们建议使用磁盘基准测试工具，比如 diskbench 或者 fio。
+etcd对磁盘带宽没什么要求，但是更大的磁盘带宽可以在失败节点加入集群时，更快的完成恢复操作。通常10MB/s带宽的磁盘15s可以恢复100MB的数据，对于大型集群，100MB/s或更高带宽的磁盘可以在15s内恢复1GB数据。
+如果有可能，etcd后端存储就用SSD。一个SSD磁盘和机械盘相比，通常会提供更低的写入延时和更少的数据跳变（variance），因此可以提高etcd集群的稳定性和可靠性。如果使用机械盘，尽可能使用最快的（15000转）。使用RAID 0也是一种有效提高磁盘性能的方法，不管是机械盘还是SSD都可以。etcd集群至少有3个节点，磁盘使用RAID做镜像或者做奇偶校验都是不必要的，因为etcd自身的一致性复制已经保证了数据的高可用。
+Etcd日志写入 etcd的存储分为内存存储和持久化（硬盘）存储两部分，内存中的存储除了顺序化地记录下所有用户对节点数据变更的记录外，还会对用户数据进行索引、建堆等方便查询的操作。而持久化则使用预写式日志（WAL：Write Ahead Log）进行记录存储。
+在WAL的体系中，所有的数据在提交之前都会进行日志记录。在etcd的持久化存储目录中，有两个子目录。一个是WAL，存储着所有事务的变化记录；另一个则是snapshot，用于存储某一个时刻etcd所有目录的数据。通过WAL和snapshot相结合的方式，etcd可以有效地进行数据存储和节点故障恢复等操作。</description>
+    </item>
+    
+    <item>
+      <title>Etcd源码分析之存储</title>
+      <link>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/</link>
+      <pubDate>Wed, 15 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/</guid>
+      <description>存储数据结构 Etcd存储在集群搭建和使用篇有简介，总结起来有如下特点：
+ 采用kv型数据存储，一般情况下比关系型数据库快。 支持动态存储(内存)以及静态存储(磁盘)。 分布式存储，可集成为多节点集群。 存储方式，采用类似目录结构。 1、只有叶子节点才能真正存储数据，相当于文件。 2、叶子节点的父节点一定是目录，目录不能存储数据。  叶子节点数据结构位于 /store/store.go
+type store struct { Root *node WatcherHub *watcherHub CurrentIndex uint64 Stats *Stats CurrentVersion int ttlKeyHeap *ttlKeyHeap // need to recovery manually worldLock sync.</description>
+    </item>
+    
+    <item>
+      <title>Etcd源码分析之put流程</title>
+      <link>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/</link>
+      <pubDate>Fri, 10 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/</guid>
+      <description>put操作 put操作是etcd v3 client支持的命令，和v2的set用法差不多
+但是需要注意的是，如果你在一个3节点的etcd集群中，A节点切换为v3 client版本，然后put进了一对key-value，在B节点，还是v2的client，这个时候你get不到数据的，如果在B节点切换到了v3 client，这个时候才可以get到数据
+简单的说，v2和v3 client，插入数据到同一个etcd集群中，数据不能互通
+put流程分析 client端 put命令接受的入口，在/etcdctl/ctlv3/command/put_command.go中的NewPutCommand()函数中，采用了一个corba结构体接受命令参数，实际Run执行的命令是putCommandFunc()
+func putCommandFunc(cmd *cobra.Command, args []string) { key, value, opts := getPutOp(cmd, args) //解析参数 ctx, cancel := commandCtx(cmd) resp, err := mustClientFromCmd(cmd).</description>
+    </item>
+    
+    <item>
+      <title>Etcd源码分析之raft协议</title>
+      <link>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Braft%E5%8D%8F%E8%AE%AE/</link>
+      <pubDate>Wed, 08 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Braft%E5%8D%8F%E8%AE%AE/</guid>
+      <description>以etcd或者docker中的raft协议为列子,来解析raft协议的实际落地
+server通信 概述 server之前的消息传递并不是简单的request-response模型，而是读写分离模型，
+即每两个server之间会建立两条链路，对于每一个server来说，一条链路专门用来发送数据，另一条链路专门用来接收数据.
+在代码实现中，通过streamWriter发送数据，通过streamReader接收数据。即通过streamReader接收数据接收到数据后会直接响应，在处理完数据后通过streamWriter将响应发送到对端
+对于每个server来说，不管是leader、candicate还是follower，都会维持一个peers数组，每个peer对应集群中的一个server，负责处理server之间的一些数据交互。
+当server需要向其他server发送数据时，只需要找到其他server对应的peer，然后向peer的streamWriter的msgc通道发送数据即可，streamWriter会监听msgc通道的数据并发送到对端server；
+而streamReader会在一个goroutine中循环读取对端发送来的数据，一旦接收到数据，就发送到peer的p.propc或p.recvc通道，而peer会监听这两个通道的事件，写入到node的n.propc或n.recvc通道，node只需要监听这两个通道的数据并处理即可。这就是在etcd的raft实现中server间数据交互的流程。
+启动监听 对于每个server，都会创建一个raftNode，并且启动一个goroutine，执行raftNode的serveRaft方法
+func (rc *raftNode) serveRaft() { ...... err = (&amp;amp;http.Server{Handler: rc.</description>
+    </item>
+    
+    <item>
+      <title>Etcd源码分析之网络</title>
+      <link>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E7%BD%91%E7%BB%9C/</link>
+      <pubDate>Wed, 08 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E7%BD%91%E7%BB%9C/</guid>
+      <description>配置文件 etcd配置文件位于/etc/etcd/etcd.conf,该配置文件一共有5个section
+   名称 作用     member 本节点的配置，包括监听服务端口、心跳时间等   cluster 集群配置，包括集群状态、集群名称以及本节点广播地址   proxy 用于网络自动发现服务   security 安全配置   logging 日志功能组件    具体配置采集可以见另一个文章《Etcd集群配置和使用》</description>
+    </item>
+    
+    <item>
+      <title>Etcd源码分析之启动篇</title>
+      <link>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%90%AF%E5%8A%A8%E7%AF%87/</link>
+      <pubDate>Wed, 01 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%90%AF%E5%8A%A8%E7%AF%87/</guid>
+      <description>启动 启动从源码 /etcdmain/main.go 中的main函数开始
+func Main() { checkSupportArch() // 检查系统是否支持 if len(os.Args) &amp;gt; 1 { // 获取入参 cmd := os.Args[1] // 获取启动命令 if covArgs := os.</description>
+    </item>
+    
+  </channel>
+</rss>

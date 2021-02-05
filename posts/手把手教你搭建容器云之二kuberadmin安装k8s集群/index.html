@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>二、kubeadm安装Kubernetes | 蜗牛龙门阵</title>
+    <meta property="og:title" content="二、kubeadm安装Kubernetes - 蜗牛龙门阵">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2020-06-15T00:00:00&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-06-15T00:00:00&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,java,博客,项目管理">
+    <meta name="description" content="二、kubeadm安装Kubernetes">
+        
+    <meta name="author" content="chenzongshu">
+    <meta property="og:url" content="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/">
+    <link rel="shortcut icon" href='/chenzongshu.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="chenzongshu.github.io/chenzongshu.github.io">
+                        蜗牛龙门阵
+                    </a>
+                
+                <p class="description">专注容器等IT技术</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="" href="chenzongshu.github.io/chenzongshu.github.io">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#禁用swap">禁用swap</a></li>
+    <li><a href="#系统配置">系统配置</a></li>
+    <li><a href="#安装dockerkubeadm-kubelet-和-kubectl">安装docker、kubeadm、 kubelet 和 kubectl</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#安装flanneld">安装flanneld</a></li>
+    <li><a href="#安装calico">安装calico</a></li>
+    <li><a href="#master隔离">Master隔离</a></li>
+    <li><a href="#加入工作节点">加入工作节点</a></li>
+    <li><a href="#验证">验证</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#haproxy">haproxy</a></li>
+    <li><a href="#keepalivd">keepalivd</a></li>
+    <li><a href="#控制平面">控制平面</a></li>
+    <li><a href="#验证-1">验证</a></li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">二、kubeadm安装Kubernetes</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年6月15日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA'>容器平台搭建</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <h1 id="准备">准备</h1>
+<h2 id="禁用swap">禁用swap</h2>
+<p>Kubernetes 1.8开始要求必须禁用Swap，如果不关闭，默认配置下kubelet将无法启动。</p>
+<pre><code>vim /etc/fstab
+
+# / was on /dev/sda1 during installation
+UUID=8cc33106-20fc-43b7-ad52-298eed8ccae6 /               ext4    errors=remount-ro 0       1
+#/swapfile                                 none            swap    sw              0       0
+</code></pre><p>把<code>swapfile</code>行注释掉后执行</p>
+<pre><code>swapoff -a
+</code></pre><h2 id="系统配置">系统配置</h2>
+<pre><code>cat &lt;&lt;EOF &gt;  /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl --system
+</code></pre><p>设置国内kubernetes阿里云yum源</p>
+<pre><code>cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+</code></pre><p>设置docker源</p>
+<pre><code>wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -P /etc/yum.repos.d/
+</code></pre><p>加载ipvs内核，使node节点kube-proxy支持ipvs代理规则。</p>
+<pre><code>modprobe ip_vs_rr
+modprobe ip_vs_wrr
+modprobe ip_vs_sh
+</code></pre><p>并添加到开机启动文件/etc/rc.local里面。</p>
+<pre><code>cat &lt;&lt;EOF &gt;&gt; /etc/rc.local
+modprobe ip_vs_rr
+modprobe ip_vs_wrr
+modprobe ip_vs_sh
+EOF
+</code></pre><h2 id="安装dockerkubeadm-kubelet-和-kubectl">安装docker、kubeadm、 kubelet 和 kubectl</h2>
+<pre><code>yum install -y docker-ce kubeadm kubelet kubectl
+</code></pre><p>如果是Kubernetes 1.17版本, 可能还需要修改docker配置文件,</p>
+<pre><code>vim /etc/docker/daemon.json
+{
+  &quot;exec-opts&quot;: [&quot;native.cgroupdriver=systemd&quot;]
+}
+</code></pre><h1 id="使用kubeadm创建一个单master集群">使用kubeadm创建一个单Master集群</h1>
+<ul>
+<li>
+<p>1.选择一个网络插件，并检查它是否需要在初始化Master时指定一些参数，比如我们可能需要根据选择的插件来设置<code>--pod-network-cidr</code>参数。</p>
+</li>
+<li>
+<p>2.kubeadm使用eth0的默认网络接口（通常是内网IP）做为Master节点的advertise address，如果我们想使用不同的网络接口，可以使用<code>--apiserver-advertise-address=&lt;ip-address&gt;</code>参数来设置。如果适应IPv6，则必须使用IPv6d的地址，如：<code>--apiserver-advertise-address=fd00::101</code>。</p>
+</li>
+<li>
+<p>3.使用<code>kubeadm config images pull</code>来预先拉取初始化需要用到的镜像，用来检查是否能连接到Kubenetes的Registries。</p>
+</li>
+</ul>
+<p>Kubenetes默认Registries地址是<code>k8s.gcr.io</code>，很明显，在国内并不能访问gcr.io，因此在kubeadm v1.13之前的版本，安装起来非常麻烦，但是在1.13版本中终于解决了国内的痛点，其增加了一个<code>--image-repository</code>参数，默认值是<code>k8s.gcr.io</code>，我们将其指定为国内镜像地址：<code>registry.aliyuncs.com/google_containers</code>，其它的就可以完全按照官方文档来愉快的玩耍了。</p>
+<p>其次，我们还需要指定<code>--kubernetes-version</code>参数，因为它的默认值是<code>stable-1</code>，会导致从<code>https://dl.k8s.io/release/stable-1.txt</code>下载最新的版本号，我们可以将其指定为固定版本（最新版：v1.13.1）来跳过网络请求。</p>
+<p>如果是本地镜像, 可以使用<code>kubeadm config images list --kubernetes-version=v1.17.0 </code>查看对应版本需要哪些镜像</p>
+<p>然后创建</p>
+<pre><code>root@czs-virtual-machine:~# kubeadm init --image-repository registry.aliyuncs.com/google_containers --kubernetes-version v1.19.3 --pod-network-cidr=10.244.0.0/16
+[init] Using Kubernetes version: v1.17.0
+[preflight] Running pre-flight checks
+	[WARNING IsDockerSystemdCheck]: detected &quot;cgroupfs&quot; as the Docker cgroup driver. The recommended driver is &quot;systemd&quot;. Please follow the guide at https://kubernetes.io/docs/setup/cri/
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
+[kubelet-start] Writing kubelet environment file with flags to file &quot;/var/lib/kubelet/kubeadm-flags.env&quot;
+[kubelet-start] Writing kubelet configuration to file &quot;/var/lib/kubelet/config.yaml&quot;
+[kubelet-start] Activating the kubelet service
+[certs] Using certificateDir folder &quot;/etc/kubernetes/pki&quot;
+[certs] Generating &quot;etcd/ca&quot; certificate and key
+[certs] Generating &quot;etcd/peer&quot; certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [czs-virtual-machine localhost] and IPs [172.16.104.170 127.0.0.1 ::1]
+[certs] Generating &quot;etcd/healthcheck-client&quot; certificate and key
+[certs] Generating &quot;etcd/server&quot; certificate and key
+[certs] etcd/server serving cert is signed for DNS names [czs-virtual-machine localhost] and IPs [172.16.104.170 127.0.0.1 ::1]
+[certs] Generating &quot;apiserver-etcd-client&quot; certificate and key
+[certs] Generating &quot;front-proxy-ca&quot; certificate and key
+[certs] Generating &quot;front-proxy-client&quot; certificate and key
+[certs] Generating &quot;ca&quot; certificate and key
+[certs] Generating &quot;apiserver&quot; certificate and key
+[certs] apiserver serving cert is signed for DNS names [czs-virtual-machine kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 172.16.104.170]
+[certs] Generating &quot;apiserver-kubelet-client&quot; certificate and key
+[certs] Generating &quot;sa&quot; key and public key
+[kubeconfig] Using kubeconfig folder &quot;/etc/kubernetes&quot;
+[kubeconfig] Writing &quot;admin.conf&quot; kubeconfig file
+[kubeconfig] Writing &quot;kubelet.conf&quot; kubeconfig file
+[kubeconfig] Writing &quot;controller-manager.conf&quot; kubeconfig file
+[kubeconfig] Writing &quot;scheduler.conf&quot; kubeconfig file
+[control-plane] Using manifest folder &quot;/etc/kubernetes/manifests&quot;
+[control-plane] Creating static Pod manifest for &quot;kube-apiserver&quot;
+[control-plane] Creating static Pod manifest for &quot;kube-controller-manager&quot;
+[control-plane] Creating static Pod manifest for &quot;kube-scheduler&quot;
+[etcd] Creating static Pod manifest for local etcd in &quot;/etc/kubernetes/manifests&quot;
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory &quot;/etc/kubernetes/manifests&quot;. This can take up to 4m0s
+[kubelet-check] Initial timeout of 40s passed.
+[apiclient] All control plane components are healthy after 65.503845 seconds
+[upload-config] storing the configuration used in ConfigMap &quot;kubeadm-config&quot; in the &quot;kube-system&quot; Namespace
+[kubelet] Creating a ConfigMap &quot;kubelet-config-1.14&quot; in namespace kube-system with the configuration for the kubelets in the cluster
+[upload-certs] Skipping phase. Please see --experimental-upload-certs
+[mark-control-plane] Marking the node czs-virtual-machine as control-plane by adding the label &quot;node-role.kubernetes.io/master=''&quot;
+[mark-control-plane] Marking the node czs-virtual-machine as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]
+[bootstrap-token] Using token: q3j2nl.aepa1nc8fjjhfixx
+[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstrap-token] configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[bootstrap-token] creating the &quot;cluster-info&quot; ConfigMap in the &quot;kube-public&quot; namespace
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run &quot;kubectl apply -f [podnetwork].yaml&quot; with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 172.16.104.170:6443 --token q3j2nl.aepa1nc8fjjhfixx \
+    --discovery-token-ca-cert-hash sha256:72d3c4a3033ac4b0edfedc1c6320c7dd18437b2a1579a27dbbf2670d7d61dc2e
+</code></pre><p>ubuntu系统下, <code>kube-apiserver</code>的监听端口可以看到只监听了https的6443端口</p>
+<pre><code>root@czs-virtual-machine:~# netstat -nltp | grep apiserver
+tcp6       0      0 :::6443                 :::*                    LISTEN      2149/kube-apiserver
+</code></pre><p>为了使用kubectl访问apiserver, 需要进行配置</p>
+<pre><code>mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+</code></pre><p>记住其他节点需要创建集群的master的节点的对应文件, 就能执行<code>kubectl</code>了</p>
+<p>然后即可以看到pod</p>
+<pre><code>root@czs-virtual-machine:~# kubectl get pods --all-namespaces
+NAMESPACE     NAME                                          READY   STATUS    RESTARTS   AGE
+kube-system   coredns-8686dcc4fd-4j57c                      0/1     Pending   0          171m
+kube-system   coredns-8686dcc4fd-kzqw4                      0/1     Pending   0          171m
+kube-system   etcd-czs-virtual-machine                      1/1     Running   8          171m
+kube-system   kube-apiserver-czs-virtual-machine            1/1     Running   19         171m
+kube-system   kube-controller-manager-czs-virtual-machine   1/1     Running   3          171m
+kube-system   kube-proxy-vgkfp                              1/1     Running   1          171m
+kube-system   kube-scheduler-czs-virtual-machine            1/1     Running   3          171m
+</code></pre><p>可以看到<code>coredns</code>处于pending状态, 因为还没安装网络插件</p>
+<h2 id="安装flanneld">安装flanneld</h2>
+<p>flanneld或者Calico只需要安装一个, 这里我们flanneld采用daemonset模式安装</p>
+<pre><code>kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+</code></pre><p>等镜像下载完成, 安装完即可以看到对应的ds的pod已经起来</p>
+<pre><code>[root@k8s-master ~]# kubectl get po --all-namespaces
+NAMESPACE     NAME                                 READY   STATUS    RESTARTS   AGE
+kube-system   kube-flannel-ds-55wnp                1/1     Running   0          100s
+kube-system   kube-flannel-ds-5gz5j                1/1     Running   0          100s
+</code></pre><h2 id="安装calico">安装calico</h2>
+<p>默认情况下，<code>Calico</code>网络插件使用的的网段是<code>192.168.0.0/16</code>，在init的时候，我们已经通过<code>--pod-network-cidr=192.168.0.0/16</code>来适配Calico，当然你也可以修改<code>calico.yml</code>文件来指定不同的网段。</p>
+<p>先下载calico镜像, 有4个镜像</p>
+<pre><code>[root@localhost czs]# docker images
+REPOSITORY                                                        TAG                 IMAGE ID            CREATED             SIZE
+calico/node                                                       v3.11.2             81f501755bb9        4 days ago          255MB
+calico/cni                                                        v3.11.2             c317181e3b59        4 days ago          204MB
+calico/pod2daemon-flexvol                                         v3.11.2             f69bca7e2325        5 days ago          111MB
+calico/kube-controllers                                           v3.11.2             9e897df2f2af        5 days ago          52.5MB
+</code></pre><p>然后下载对应的yaml文件, 注意修改里面的镜像版本,</p>
+<pre><code>wget https://docs.projectcalico.org/v3.11/manifests/calico.yaml
+</code></pre><p>然后使用<code>apply</code>命令跑起来，<code>kubectl apply -f calico.yaml</code></p>
+<p>然后可以看到全部pods拉起来, 变成了running状态</p>
+<pre><code>root@czs-virtual-machine:~# kubectl get pods --all-namespaces
+NAMESPACE     NAME                                          READY   STATUS    RESTARTS   AGE
+kube-system   calico-node-sk75d                             2/2     Running   0          2m30s
+kube-system   coredns-8686dcc4fd-4j57c                      0/1     Running   0          4h56m
+kube-system   coredns-8686dcc4fd-kzqw4                      1/1     Running   0          4h56m
+kube-system   etcd-czs-virtual-machine                      1/1     Running   17         4h56m
+kube-system   kube-apiserver-czs-virtual-machine            1/1     Running   34         4h56m
+kube-system   kube-controller-manager-czs-virtual-machine   1/1     Running   12         4h56m
+kube-system   kube-proxy-vgkfp                              1/1     Running   5          4h56m
+kube-system   kube-scheduler-czs-virtual-machine            1/1     Running   12         4h56m
+</code></pre><h2 id="master隔离">Master隔离</h2>
+<p>默认情况下，由于安全原因，集群并不会将pods部署在Master节点上。但是在开发环境下，我们可能就只有一个Master节点，这时可以使用下面的命令来解除这个限制：</p>
+<pre><code>root@czs-virtual-machine:~# kubectl taint nodes --all node-role.kubernetes.io/master-
+</code></pre><p>如果需要恢复master隔离, 可以执行命令</p>
+<pre><code>kubectl taint nodes &lt;master node name&gt; node-role.kubernetes.io/master=:NoSchedule
+</code></pre><h2 id="加入工作节点">加入工作节点</h2>
+<p>要把其他节点加入集群, 也可以使用kubeadm</p>
+<p>成为root用户, 运行<code>kubeadm init</code>输出的结果来</p>
+<pre><code>kubeadm join --token &lt;token&gt; &lt;master-ip&gt;:&lt;master-port&gt; --discovery-token-ca-cert-hash sha256:&lt;hash&gt;
+</code></pre><p>如果我们忘记了Master节点的加入token，可以使用如下命令来查看</p>
+<pre><code>root@czs-virtual-machine:~# kubeadm token list
+TOKEN                     TTL       EXPIRES                     USAGES                   DESCRIPTION                                                EXTRA GROUPS
+q3j2nl.aepa1nc8fjjhfixx   1h        2019-04-09T18:29:14+08:00   authentication,signing   The default bootstrap token generated by 'kubeadm init'.   system:bootstrappers:kubeadm:default-node-token
+</code></pre><p>默认情况下，token的有效期是24小时，如果我们的token已经过期的话，可以使用以下命令重新生成：</p>
+<pre><code>kubeadm token create
+
+# 输出
+u2mt59.tyqpo0v5wf05lx2q
+</code></pre><p>如果我们也没有<code>--discovery-token-ca-cert-hash</code>的值，可以使用以下命令生成：</p>
+<pre><code>openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2&gt;/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
+
+# 输出
+eebfe256113bee397b218ba832f412273ae734bd4686241fb910885d26efd222
+</code></pre><p>然后, 登录到工作节点服务器，然后运行如下命令加入集群</p>
+<pre><code>sudo kubeadm join 172.17.20.210:6443 --token 6pkrlg.8glf2fqpuf3i489m --discovery-token-ca-cert-hash sha256:eebfe256113bee397b218ba832f412273ae734bd4686241fb910885d26efd222
+</code></pre><h2 id="验证">验证</h2>
+<pre><code>kubectl create deployment nginx --image=nginx:alpine
+kubectl scale deployment nginx --replicas=2
+
+# 验证Nginx Pod是否正确运行，并且会分配192.168.开头的集群IP
+
+root@czs-virtual-machine:~# kubectl get pods -l app=nginx -o wide
+NAME                    READY   STATUS    RESTARTS   AGE     IP            NODE                  NOMINATED NODE   READINESS GATES
+nginx-77595c695-44znf   1/1     Running   0          2m55s   192.168.0.4   czs-virtual-machine   &lt;none&gt;           &lt;none&gt;
+nginx-77595c695-9srkm   1/1     Running   0          4s      192.168.0.5   czs-virtual-machine   &lt;none&gt;           &lt;none&gt;
+</code></pre><p>再验证一下<code>kube-proxy</code>是否正常：</p>
+<pre><code># 以 NodePort 方式对外提供服务
+root@czs-virtual-machine:~# kubectl expose deployment nginx --port=80 --type=NodePort
+service/nginx exposed
+
+root@czs-virtual-machine:~# kubectl get services nginx
+NAME    TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+nginx   NodePort   10.99.235.119   &lt;none&gt;        80:30357/TCP   14s
+
+</code></pre><p>在另外的环境就可以通过端口访问该服务</p>
+<pre><code>chenzongshudeMacBook-Pro:vmnet8 chenzongshu$ curl http://172.16.104.170:30357
+
+&lt;!DOCTYPE html&gt;
+......省略......
+</code></pre><h1 id="卸载集群">卸载集群</h1>
+<p>想要撤销kubeadm执行的操作，首先要排除节点，并确保该节点为空, 然后再将其关闭。</p>
+<p>在Master节点上运行：</p>
+<pre><code>kubectl drain &lt;node name&gt; --delete-local-data --force --ignore-daemonsets
+kubectl delete node &lt;node name&gt;
+</code></pre><p>然后在需要移除的节点上，重置kubeadm的安装状态：</p>
+<pre><code>sudo kubeadm reset
+</code></pre><p>如果你想重新配置集群，使用新的参数重新运行<code>kubeadm init</code>或者<code>kubeadm join</code>即可</p>
+<h1 id="部署高可用kubernetes集群">部署高可用Kubernetes集群</h1>
+<p>采用keepalived + haproxy软负载的方案, 考虑到VIP分配的问题, 尝试使用一个master节点的真实IP作为VIP(但是后续失败, 所以选了一个IP作为VIP), 其中keepalived和haproxy都使用容器化部署</p>
+<p>部署高可用集群之前, 不要使用<code>kuberadm init</code>操作初始化集群, 因为要部署高可用集群, 需要先创建一个控制平面, 可见官网地址:  <a href="https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/high-availability/">https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/high-availability/</a></p>
+<h2 id="haproxy">haproxy</h2>
+<p>在所有节点创建haproxy目录</p>
+<pre><code>mkdir -p /etc/haproxy/
+</code></pre><p>然后在所有节点创建配置文件, 具体参数含义自行查询</p>
+<pre><code>cat &lt;&lt;EOF &gt; /etc/haproxy/haproxy.cfg
+global
+  log 127.0.0.1 local0
+  log 127.0.0.1 local1 notice
+  tune.ssl.default-dh-param 2048
+
+defaults
+  log global
+  mode http
+  option dontlognull
+  timeout connect 5000ms
+  timeout client 600000ms
+  timeout server 600000ms
+
+listen stats
+    bind :9090
+    mode http
+    balance
+    stats uri /haproxy_stats
+    stats auth admin:admin123
+    stats admin if TRUE
+
+frontend kube-apiserver-https
+   mode tcp
+   bind :8443
+   default_backend kube-apiserver-backend
+
+backend kube-apiserver-backend
+    mode tcp
+    balance roundrobin
+    stick-table type ip size 200k expire 30m
+    stick on src
+    server apiserver1 172.16.104.171:6443 check
+    server apiserver2 172.16.104.131:6443 check
+    server apiserver3 172.16.104.132:6443 check
+EOF
+</code></pre><p>然后使用static pod把haproxy部署起来, 创建<code>/etc/kubernetes/manifests/haproxy.yaml</code>文件</p>
+<pre><code>cat &lt;&lt;EOF &gt; /etc/kubernetes/manifests/haproxy.yaml
+kind: Pod
+apiVersion: v1
+metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: &quot;&quot;
+  labels:
+    component: haproxy
+    tier: control-plane
+  name: kube-haproxy
+  namespace: kube-system
+spec:
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  containers:
+  - name: kube-haproxy
+    image: haproxy:1.9.7
+    resources:
+      requests:
+        cpu: 100m
+    volumeMounts:
+    - name: haproxy-cfg
+      readOnly: true
+      mountPath: /usr/local/etc/haproxy/haproxy.cfg
+  volumes:
+  - name: haproxy-cfg
+    hostPath:
+      path: /etc/haproxy/haproxy.cfg
+      type: FileOrCreate
+EOF
+</code></pre><h2 id="keepalivd">keepalivd</h2>
+<p>在所有节点创建yaml文件 <code>/etc/kubernetes/manifests/keepalived.yaml</code></p>
+<pre><code>cat &lt;&lt;EOF &gt; /etc/kubernetes/manifests/keepalived.yaml
+kind: Pod
+apiVersion: v1
+metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: &quot;&quot;
+  labels:
+    component: keepalived
+    tier: control-plane
+  name: kube-keepalived
+  namespace: kube-system
+spec:
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  containers:
+  - name: kube-keepalived
+    image: osixia/keepalived:2.0.19
+    env:
+    - name: KEEPALIVED_VIRTUAL_IPS
+      value: 172.16.104.200
+    - name: KEEPALIVED_INTERFACE
+      value: ens33
+    - name: KEEPALIVED_UNICAST_PEERS
+      value: &quot;#PYTHON2BASH:['172.16.104.171', '172.16.104.131', '172.16.104.132']&quot;
+    - name: KEEPALIVED_PASSWORD
+      value: docker
+    - name: KEEPALIVED_PRIORITY
+      value: &quot;100&quot;
+    - name: KEEPALIVED_ROUTER_ID
+      value: &quot;51&quot;
+    resources:
+      requests:
+        cpu: 100m
+    securityContext:
+      privileged: true
+      capabilities:
+        add:
+        - NET_ADMIN
+EOF
+</code></pre><blockquote>
+<ul>
+<li>KEEPALIVED_VIRTUAL_IPS：Keepalived 提供的 VIPs。</li>
+</ul>
+</blockquote>
+<ul>
+<li>KEEPALIVED_INTERFACE：VIPs 绑定的网卡。</li>
+<li>KEEPALIVED_UNICAST_PEERS：其他 Keepalived 节点单点传播的IP。</li>
+<li>KEEPALIVED_PASSWORD： Keepalived auth_type 的 Password。</li>
+<li>KEEPALIVED_PRIORITY：指定了VIP更换的优先级权重, 数字越小优先顺序越高, 主节点设置为100, 其他2个设置为150</li>
+<li>KEEPALIVED_ROUTER_ID：一组Keepalived instance 的数字识别号。</li>
+</ul>
+<h2 id="控制平面">控制平面</h2>
+<p>使用kubeadm创建控制平面, 在主节点创建一个<code>kubeadm-config.yaml</code>文件</p>
+<pre><code>cat &lt;&lt;EOF &gt; kubeadm-config.yaml
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: v1.17.0
+imageRepository: registry.aliyuncs.com/google_containers
+controlPlaneEndpoint: &quot;172.16.104.200:8443&quot;
+networking:
+  podSubnet: &quot;10.244.0.0/16&quot;
+EOF
+</code></pre><p>然后使用这个配置文件来初始化master节点 , 配置文件和直接命令执行一样的</p>
+<pre><code>kubeadm init --config=kubeadm-config.yaml --upload-certs
+
+......
+You should now deploy a pod network to the cluster.
+Run &quot;kubectl apply -f [podnetwork].yaml&quot; with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of the control-plane node running the following command on each as root:
+
+  kubeadm join 172.16.104.200:8443 --token 5lzdvt.pipwh1bu0ju5gvxm \
+    --discovery-token-ca-cert-hash sha256:e8d55f3d76cbddf9562170b36d15a47ba7ef33c6f35831333c164a9284767d7e \
+    --control-plane --certificate-key 2ee1e36ebc5e18e6da8632993db232ff5e896df143914dc44edda36288746d20
+
+Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
+As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use
+&quot;kubeadm init phase upload-certs --upload-certs&quot; to reload certs afterward.
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 172.16.104.200:8443 --token 5lzdvt.pipwh1bu0ju5gvxm \
+    --discovery-token-ca-cert-hash sha256:e8d55f3d76cbddf9562170b36d15a47ba7ef33c6f35831333c164a9284767d7e
+</code></pre><p>其他master节点加入, 之后可以看到</p>
+<pre><code>[root@vm1 kubernetes]# kubectl get nodes
+NAME          STATUS   ROLES    AGE   VERSION
+centos-kata   Ready    master   51m   v1.17.1
+vm1           Ready    master   39m   v1.17.1
+vm2           Ready    master   24m   v1.17.1
+
+
+[root@centos-kata ~]# kubectl get pods --all-namespaces
+NAMESPACE     NAME                                       READY   STATUS    RESTARTS   AGE
+kube-system   calico-kube-controllers-5b644bc49c-j4w6c   1/1     Running   0          5h10m
+kube-system   calico-node-48k8s                          1/1     Running   0          5h4m
+kube-system   calico-node-9wstc                          1/1     Running   1          5h10m
+kube-system   calico-node-bkdsz                          1/1     Running   0          5h10m
+kube-system   coredns-9d85f5447-bvb9k                    1/1     Running   12         5h31m
+kube-system   coredns-9d85f5447-tqhdq                    1/1     Running   1          5h31m
+kube-system   etcd-centos-kata                           1/1     Running   8          5h31m
+kube-system   etcd-vm1                                   1/1     Running   0          5h19m
+kube-system   etcd-vm2                                   1/1     Running   0          5h4m
+kube-system   kube-apiserver-centos-kata                 1/1     Running   9          5h31m
+kube-system   kube-apiserver-vm1                         1/1     Running   0          5h19m
+kube-system   kube-apiserver-vm2                         1/1     Running   0          5h4m
+kube-system   kube-controller-manager-centos-kata        1/1     Running   3          5h31m
+kube-system   kube-controller-manager-vm1                1/1     Running   1          5h19m
+kube-system   kube-controller-manager-vm2                1/1     Running   1          5h4m
+kube-system   kube-haproxy-centos-kata                   1/1     Running   1          5h31m
+kube-system   kube-haproxy-vm1                           1/1     Running   0          47s
+kube-system   kube-keepalived-centos-kata                1/1     Running   1          5h31m
+kube-system   kube-keepalived-vm1                        1/1     Running   0          47s
+kube-system   kube-proxy-c6zlc                           1/1     Running   0          5h19m
+kube-system   kube-proxy-mk2tb                           1/1     Running   0          5h4m
+kube-system   kube-proxy-qt6gx                           1/1     Running   1          5h31m
+kube-system   kube-scheduler-centos-kata                 1/1     Running   3          5h31m
+kube-system   kube-scheduler-vm1                         1/1     Running   2          5h19m
+kube-system   kube-scheduler-vm2                         1/1     Running   0          5h4m
+
+</code></pre><p>遗留问题:</p>
+<ul>
+<li>另外两个master节点加入的时候, 发现提示manifest目录不为空, 需要把haproxy和keepalived的yaml文件删掉才能加入</li>
+<li>VIP不能选择节点本身实体的IP, 如果把VIP配置成node IP, 手动把另外两个master节点的haproxy和keepalived的yaml文件加入到manifest中, 会导致集群出问题, 提示&quot;Error from server: etcdserver: request timed out&quot;</li>
+</ul>
+<h2 id="验证-1">验证</h2>
+<p>把第一个最开始创建keepalived和haproxy的节点poweroff关掉, 可以看到集群任然处于可用状态</p>
+<pre><code>[root@vm1 manifests]# kubectl get nodes
+NAME          STATUS     ROLES    AGE     VERSION
+centos-kata   NotReady   master   6h32m   v1.17.1
+vm1           Ready      master   6h20m   v1.17.1
+vm2           Ready      master   6h5m    v1.17.1
+</code></pre><h1 id="问题排查">问题排查</h1>
+<p>可以使用<code>-v=10</code>来打印详细信息来定位, 比如使用</p>
+<pre><code>kubeadm join 172.16.104.200:8443 --token 5lzdvt.pipwh1bu0ju5gvxm \
+    --discovery-token-ca-cert-hash sha256:e8d55f3d76cbddf9562170b36d15a47ba7ef33c6f35831333c164a9284767d7e -v=10
+</code></pre><h1 id="rpm包安装keepalived和haproxy提供软负载">RPM包安装Keepalived和Haproxy提供软负载</h1>
+<p>如果不想用静态Pod形式部署Keepalived和Haproxy, 可以用RPM包方式安装并提供服务, 方法和配置如下</p>
+<p>每台master上安装对应软件</p>
+<pre><code>yum install -y keepalived haproxy
+</code></pre><p>创建或者更改haproxy的配置文件,三个master上一样</p>
+<pre><code>cat &lt;&lt;EOF &gt; /etc/haproxy/haproxy.cfg
+global
+  log 127.0.0.1 local0
+  log 127.0.0.1 local1 notice
+  tune.ssl.default-dh-param 2048
+  maxconn 4000
+
+defaults
+  log global
+  mode http
+  option dontlognull
+  timeout connect 5000ms
+  timeout client 600000ms
+  timeout server 600000ms
+
+listen stats
+    bind :9090
+    mode http
+    balance
+    stats uri /haproxy_stats
+    stats auth admin:admin123
+    stats admin if TRUE
+
+frontend kube-apiserver-https
+   mode tcp
+   bind :8443
+   default_backend kube-apiserver-backend
+
+backend kube-apiserver-backend
+    mode tcp
+    balance roundrobin
+    stick-table type ip size 200k expire 30m
+    stick on src
+    server apiserver1 172.16.104.171:6443 check
+    server apiserver2 172.16.104.131:6443 check
+    server apiserver3 172.16.104.132:6443 check
+EOF
+</code></pre><p>然后启动haproxy  <code>systemctl start haproxy</code></p>
+<p>然后创建或者更改keepalived的配置文件 <code>/etc/keepalived/keepalived.conf</code>, 每台不一样,请注意, 这一步和容器化部署不一样</p>
+<p>参数含义如下</p>
+<pre><code>global_defs {
+    router_id centos-kata  ## 本节点标识，可使用主机名
+}
+#监测haproxy进程状态，健康检查，每2秒执行一次 
+vrrp_script chk_haproxy {
+    script &quot;/etc/keepalived/chk_haproxy.sh&quot; #监控脚本
+    interval 2   #每两秒进行一次
+    weight -10    #如果script中的指令执行失败，vrrp_instance的优先级会减少10个点
+}
+vrrp_instance VI_1 {
+    state MASTER          #主服务器MASTER，从服务器为BACKUP
+    interface ens33        #服务器固有IP（非VIP）的网卡
+    virtual_router_id 51  #取值在0-255之间，用来区分多个instance的VRRP组播，同一网段中virtual_router_id的值不能重复，否则会出错。
+    priority 100          #用来选举master的，要成为master，那么这个选项的值最好高于其他机器50个点。此时，从服务器要低于100；
+    advert_int 1          #健康查检时间间隔
+    mcast_src_ip 172.16.104.200    #MASTER服务器IP,从服务器写从服务器的IP
+    authentication { #认证区域
+        auth_type PASS  #推荐使用PASS（密码只识别前8位）
+        auth_pass 12345678
+    }
+    track_script {
+        chk_haproxy    #监测haproxy进程状态
+    }
+    virtual_ipaddress {
+        172.16.104.200   #虚拟IP，作IP漂移使用
+    }
+}
+</code></pre><p>master配置如下, 如果是其他节点, 则需要修改 router_id , priority, mcast_src_ip 这三项</p>
+<pre><code>global_defs {
+    router_id centos-kata  
+}
+
+vrrp_script chk_haproxy {
+    script &quot;/etc/keepalived/chk_haproxy.sh&quot; 
+    interval 2
+    weight -10
+}
+vrrp_instance VI_1 {
+    state MASTER         
+    interface ens33        
+    virtual_router_id 51  
+    priority 200         
+    advert_int 1          
+    mcast_src_ip 172.16.104.171    
+    authentication { 
+        auth_type PASS  
+        auth_pass 12345678
+    }
+    track_script {
+        chk_haproxy    
+    }
+    virtual_ipaddress {
+        172.16.104.200 
+    }
+}
+</code></pre><p>创建一个检测脚本, 并设置属性是可执行</p>
+<pre><code>vim /etc/keepalived/chk_haproxy.sh
+
+if [ &quot;${status}&quot; = &quot;0&quot; ]; then
+    systemctl start haproxy
+
+    status2=$(ps aux|grep haproxy | grep -v grep | grep -v bash |wc -l)
+
+    if [ &quot;${status2}&quot; = &quot;0&quot;  ]; then
+            systemctl stop keepalived
+    fi
+fi
+</code></pre><p>然后启动keepalived: <code>systemctl start keepalived</code></p>
+<p>验证, 用kubeadm创建集群, 可以看到多master创建成功</p>
+<pre><code>[root@centos-kata czs]# kubectl get nodes
+NAME          STATUS   ROLES    AGE     VERSION
+centos-kata   Ready    master   4m39s   v1.17.1
+vm1           Ready    master   3m22s   v1.17.1
+
+可以看到没有其他网络组件或者keepalived,haproxy的组件
+[root@centos-kata czs]# kubectl get po -n kube-system
+NAME                                  READY   STATUS              RESTARTS   AGE
+coredns-9d85f5447-dmv45               0/1     ContainerCreating   0          6m9s
+coredns-9d85f5447-dwlxb               0/1     ContainerCreating   0          6m9s
+etcd-centos-kata                      1/1     Running             0          6m4s
+etcd-vm1                              1/1     Running             0          5m9s
+kube-apiserver-centos-kata            1/1     Running             0          6m4s
+kube-apiserver-vm1                    1/1     Running             0          5m10s
+kube-controller-manager-centos-kata   1/1     Running             1          6m4s
+kube-controller-manager-vm1           1/1     Running             0          5m10s
+kube-proxy-gb6d6                      1/1     Running             0          5m11s
+kube-proxy-l9zb7                      1/1     Running             0          6m9s
+kube-scheduler-centos-kata            1/1     Running             1          6m4s
+kube-scheduler-vm1                    1/1     Running             0          5m9s
+</code></pre><h1 id="查看etcd数据">查看Etcd数据</h1>
+<p>kubeadm 创建的集群, etcd 默认使用 tls ，这时你可以在 master 节点上使用以下命令来访问 etcd</p>
+<pre><code>ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/namespaces/default -w=json|python -m json.tool
+</code></pre><p>使用<code>--prefix</code>可以看到所有的子目录</p>
+<p>可以使用下面脚本来查看Kubernetes元数据</p>
+<pre><code>#!/bin/bash
+# Get kubernetes keys from etcd
+export ETCDCTL_API=3
+keys=`etcdctl get /registry --prefix -w json|python -m json.tool|grep key|cut -d &quot;:&quot; -f2|tr -d '&quot;'|tr -d &quot;,&quot;`
+for x in $keys;do
+  echo $x|base64 -d|sort
+done
+</code></pre>
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/">五、EFK</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/">四、Harbor镜像仓库</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/">三、Helm和Ingress</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/">一、容器云架构介绍</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">Etcd源码分析之磁盘写入及操作</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/chenzongshu.github.io/tags/kubernetes'>kubernetes</a></li>
+                
+                <li><a href='/chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8'>容器</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="chenzongshu.github.io/chenzongshu.github.io">蜗牛龙门阵 By chenzongshu</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/chenzongshu.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="chenzongshu.github.io">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/" title="容器江湖闲话">容器江湖闲话</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/" title="六、监控体系">六、监控体系</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/" title="五、EFK">五、EFK</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/" title="四、Harbor镜像仓库">四、Harbor镜像仓库</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/" title="三、Helm和Ingress">三、Helm和Ingress</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/" title="一、容器云架构介绍">一、容器云架构介绍</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Etcd源码分析之磁盘写入及操作">Etcd源码分析之磁盘写入及操作</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/" title="Etcd源码分析之存储">Etcd源码分析之存储</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/" title="Etcd源码分析之put流程">Etcd源码分析之put流程</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="chenzongshu.github.io/categories/etcd/">Etcd (6)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/kubernetes/">kubernetes (1)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA/">容器平台搭建 (6)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="chenzongshu.github.io/tags/etcd/">Etcd</a>
+    
+    <a href="chenzongshu.github.io/tags/kubernetes/">kubernetes</a>
+    
+    <a href="chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8/">容器</a>
+    
+    <a href="chenzongshu.github.io/tags/%E6%BA%90%E7%A0%81/">源码</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="chenzongshu.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

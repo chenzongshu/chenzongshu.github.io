@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>Etcd源码分析之put流程 | 蜗牛龙门阵</title>
+    <meta property="og:title" content="Etcd源码分析之put流程 - 蜗牛龙门阵">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2018-08-10T00:00:00&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2018-08-10T00:00:00&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,java,博客,项目管理">
+    <meta name="description" content="Etcd源码分析之put流程">
+        
+    <meta name="author" content="chenzongshu">
+    <meta property="og:url" content="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/">
+    <link rel="shortcut icon" href='/chenzongshu.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="chenzongshu.github.io/chenzongshu.github.io">
+                        蜗牛龙门阵
+                    </a>
+                
+                <p class="description">专注容器等IT技术</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="" href="chenzongshu.github.io/chenzongshu.github.io">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#client端">client端</a></li>
+    <li><a href="#server端">server端</a></li>
+    <li><a href="#raft协议里的流程">raft协议里的流程</a></li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">Etcd源码分析之put流程</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2018年8月10日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/chenzongshu.github.io/categories/etcd'>Etcd</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <h1 id="put操作">put操作</h1>
+<p>put操作是etcd v3 client支持的命令，和v2的set用法差不多</p>
+<p>但是需要注意的是，如果你在一个3节点的etcd集群中，A节点切换为v3 client版本，然后put进了一对key-value，在B节点，还是v2的client，这个时候你get不到数据的，如果在B节点切换到了v3 client，这个时候才可以get到数据</p>
+<p>简单的说，<strong>v2和v3 client，插入数据到同一个etcd集群中，数据不能互通</strong></p>
+<h1 id="put流程分析">put流程分析</h1>
+<h2 id="client端">client端</h2>
+<p><code>put</code>命令接受的入口，在<code>/etcdctl/ctlv3/command/put_command.go</code>中的<code>NewPutCommand()</code>函数中，采用了一个<code>corba</code>结构体接受命令参数，实际Run执行的命令是<code>putCommandFunc()</code></p>
+<pre><code>func putCommandFunc(cmd *cobra.Command, args []string) {
+	key, value, opts := getPutOp(cmd, args)  //解析参数
+
+	ctx, cancel := commandCtx(cmd)
+	resp, err := mustClientFromCmd(cmd).Put(ctx, key, value, opts...)
+	cancel()
+	if err != nil {
+		ExitWithError(ExitError, err)
+	}
+	display.Put(*resp) //打印返回的结果
+}
+</code></pre><p>该函数的核心就是<code>mustClientFromCmd(cmd).Put(ctx, key, value, opts...)</code></p>
+<p><code>mustClientFromCmd()</code>函数返回的是一个<code>clientv3.Client</code>结构体指针</p>
+<p>相当于上面调用了<code>clientv3.Client.Put()</code></p>
+<p>在 <code>/clientV3/client.go</code> 中，可以看到<code>Client</code> 结构体的定义，</p>
+<pre><code>type Client struct {
+	Cluster
+	KV
+	Lease
+</code></pre><p>里面内嵌一个<code>KV</code>的interface，由下面的代码具体实现接口</p>
+<pre><code>func (kv *kv) Put(ctx context.Context, key, val string, opts ...OpOption) (*PutResponse, error) {
+	r, err := kv.Do(ctx, OpPut(key, val, opts...))
+	return r.put, toErr(ctx, err)
+}
+</code></pre><p>继续往下，是到了<code>func (c *kVClient) Put(......)</code>，该函数里面，通过grpc的调用发到了server端 <code>grpc.Invoke(ctx, &quot;/etcdserverpb.KV/Put&quot;, in, out, c.cc, opts...)</code></p>
+<h2 id="server端">server端</h2>
+<p>在<code>/etcdserver/etcdserverpb/rpc.pb.go</code>里面，可以看到上面定义的ServiceName和MethodName，可以找到对应的方法<code>_KV_Put_Handler</code></p>
+<pre><code>var _KV_serviceDesc = grpc.ServiceDesc{
+	ServiceName: &quot;etcdserverpb.KV&quot;,
+	HandlerType: (*KVServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: &quot;Range&quot;,
+			Handler:    _KV_Range_Handler,
+		},
+		{
+			MethodName: &quot;Put&quot;,
+			Handler:    _KV_Put_Handler,
+		},
+</code></pre><p>往下追踪 <code>srv.(KVServer).Put(ctx, in)</code> -&gt; <code>(s *EtcdServer) Put()</code> -&gt; ··· ··· -&gt; <code>(s *EtcdServer) processInternalRaftRequestOnce(...)</code></p>
+<p>在该函数里面有一句关键调用 <code>s.r.Propose(cctx, data)</code></p>
+<p><code>s</code>是<code>EtcdServer</code>, <code>r</code>是其里面的成员变量<code>raftNode</code>, 这就是进入raft协议相关的节奏了</p>
+<p><code>(n *node) Propose()</code> -&gt; <code>step()</code>, 该函数代码较短，来看看</p>
+<pre><code>func (n *node) step(ctx context.Context, m pb.Message) error {
+	ch := n.recvc
+	if m.Type == pb.MsgProp {
+		ch = n.propc
+	}
+
+	select {
+	case ch &lt;- m:
+		return nil
+	case &lt;-ctx.Done():
+		return ctx.Err()
+	case &lt;-n.done:
+		return ErrStopped
+	}
+}
+</code></pre><p>这段代码主要就是根据消息类型来把传进来的<code>pb.Message</code>赋值给channel <code>n.recvc</code>或者<code>n.propc</code>，上面的<code>Propose()</code>定义了<code>pb.Message{Type: pb.MsgProp, Entries: []pb.Entry{{Data: data}}})</code>，所以就是赋值给了<code>n.propc</code></p>
+<h2 id="raft协议里的流程">raft协议里的流程</h2>
+<p>在一个raft集群启动完成以后, <code>(n *node) run()</code> 函数就是其运行的主函数, 里面是一个死循环, 循环中会根据channel来响应各种事件, 从而跳转状态</p>
+<p>上节有说到channel <code>propc</code>里面被塞入了数据, <code>run()</code> 函数里面就会有对应的处理,代码如下:</p>
+<pre><code>		case m := &lt;-propc:
+			m.From = r.id
+			r.Step(m)
+</code></pre><p>对应的<code>(r *raft) Step(m pb.Message)</code>函数也是raft协议中的核心函数, 负责状态机的跳转, 里面主要有2个逻辑</p>
+<ul>
+<li>根据传进来的term和本身的term的大小, 决定要做的动作, 具体的逻辑原理可见raft协议原理;</li>
+<li>根据消息类型m.Type做不同的处理</li>
+</ul>
+<p>注意其最后一段</p>
+<pre><code>	default:
+		r.step(r, m)
+</code></pre><p><code>step()</code>是一个类似函数借口的东西,根据节点的类型不同而调用不同的函数,比如leader节点该函数就是<code>raft.stepLeader()</code></p>
+<p>在node run的死循环中，看看开头</p>
+<pre><code>             // readyc 和 advance 只有一个是有效值
+		if advancec != nil {
+			readyc = nil
+		} else {
+			rd = newReady(r, prevSoftSt, prevHardSt)
+                   
+                   // 如果raft.msgs中队列大小不为0 也会返回true 表示有数据发出
+			if rd.containsUpdates() {
+				readyc = n.readyc
+			} else {
+				readyc = nil
+			}
+		}
+</code></pre><p>如果<code>advancec</code>是nil，说明刚commit了，可以创建<code>ready</code> channel来继续去把ready commit的commit了。</p>
+<p>(未完待续)</p>
+
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Braft%E5%8D%8F%E8%AE%AE/">Etcd源码分析之raft协议</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E7%BD%91%E7%BB%9C/">Etcd源码分析之网络</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%90%AF%E5%8A%A8%E7%AF%87/">Etcd源码分析之启动篇</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/chenzongshu.github.io/tags/etcd'>Etcd</a></li>
+                
+                <li><a href='/chenzongshu.github.io/tags/%E6%BA%90%E7%A0%81'>源码</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="chenzongshu.github.io/chenzongshu.github.io">蜗牛龙门阵 By chenzongshu</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/chenzongshu.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="chenzongshu.github.io">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/" title="容器江湖闲话">容器江湖闲话</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/" title="六、监控体系">六、监控体系</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/" title="五、EFK">五、EFK</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/" title="四、Harbor镜像仓库">四、Harbor镜像仓库</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/" title="三、Helm和Ingress">三、Helm和Ingress</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/" title="一、容器云架构介绍">一、容器云架构介绍</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Etcd源码分析之磁盘写入及操作">Etcd源码分析之磁盘写入及操作</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/" title="Etcd源码分析之存储">Etcd源码分析之存储</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/" title="Etcd源码分析之put流程">Etcd源码分析之put流程</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="chenzongshu.github.io/categories/etcd/">Etcd (6)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/kubernetes/">kubernetes (1)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA/">容器平台搭建 (6)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="chenzongshu.github.io/tags/etcd/">Etcd</a>
+    
+    <a href="chenzongshu.github.io/tags/kubernetes/">kubernetes</a>
+    
+    <a href="chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8/">容器</a>
+    
+    <a href="chenzongshu.github.io/tags/%E6%BA%90%E7%A0%81/">源码</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="chenzongshu.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

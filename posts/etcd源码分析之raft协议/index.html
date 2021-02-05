@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>Etcd源码分析之raft协议 | 蜗牛龙门阵</title>
+    <meta property="og:title" content="Etcd源码分析之raft协议 - 蜗牛龙门阵">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2018-08-08T00:00:00&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2018-08-08T00:00:00&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,java,博客,项目管理">
+    <meta name="description" content="Etcd源码分析之raft协议">
+        
+    <meta name="author" content="chenzongshu">
+    <meta property="og:url" content="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Braft%E5%8D%8F%E8%AE%AE/">
+    <link rel="shortcut icon" href='/chenzongshu.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="chenzongshu.github.io/chenzongshu.github.io">
+                        蜗牛龙门阵
+                    </a>
+                
+                <p class="description">专注容器等IT技术</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="" href="chenzongshu.github.io/chenzongshu.github.io">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#概述">概述</a></li>
+    <li><a href="#启动监听">启动监听</a></li>
+    <li><a href="#处理服务">处理服务</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#定时器">定时器</a></li>
+    <li><a href="#raft集群节点">raft集群节点</a></li>
+    <li><a href="#投票条件">投票条件</a></li>
+    <li><a href="#日志追加">日志追加</a></li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">Etcd源码分析之raft协议</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2018年8月8日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/chenzongshu.github.io/categories/etcd'>Etcd</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>以etcd或者docker中的raft协议为列子,来解析raft协议的实际落地</p>
+<h1 id="server通信">server通信</h1>
+<h2 id="概述">概述</h2>
+<p>server之前的消息传递并不是简单的request-response模型，而是读写分离模型，</p>
+<p>即每两个server之间会建立两条链路，对于每一个server来说，一条链路专门用来发送数据，另一条链路专门用来接收数据.</p>
+<p>在代码实现中，通过streamWriter发送数据，通过streamReader接收数据。即通过streamReader接收数据接收到数据后会直接响应，在处理完数据后通过streamWriter将响应发送到对端</p>
+<p>对于每个server来说，不管是leader、candicate还是follower，都会维持一个peers数组，每个peer对应集群中的一个server，负责处理server之间的一些数据交互。</p>
+<p>当server需要向其他server发送数据时，只需要找到其他server对应的peer，然后向peer的streamWriter的msgc通道发送数据即可，streamWriter会监听msgc通道的数据并发送到对端server；</p>
+<p>而streamReader会在一个goroutine中循环读取对端发送来的数据，一旦接收到数据，就发送到peer的p.propc或p.recvc通道，而peer会监听这两个通道的事件，写入到node的n.propc或n.recvc通道，node只需要监听这两个通道的数据并处理即可。这就是在etcd的raft实现中server间数据交互的流程。</p>
+<h2 id="启动监听">启动监听</h2>
+<p>对于每个server，都会创建一个raftNode，并且启动一个goroutine，执行raftNode的serveRaft方法</p>
+<pre><code>func (rc *raftNode) serveRaft() {
+......
+
+	err = (&amp;http.Server{Handler: rc.transport.Handler()}).Serve(ln)
+}
+</code></pre><p>这个方法主要是建立一个httpserver，监听其他server的连接，处理函数为rc.transport.Handler()</p>
+<pre><code>func (t *Transport) Handler() http.Handler {
+	pipelineHandler := newPipelineHandler(t, t.Raft, t.ClusterID)
+	streamHandler := newStreamHandler(t, t, t.Raft, t.ID, t.ClusterID)
+	snapHandler := newSnapshotHandler(t, t.Raft, t.Snapshotter, t.ClusterID)
+	mux := http.NewServeMux()
+	mux.Handle(RaftPrefix, pipelineHandler)
+	mux.Handle(RaftStreamPrefix+&quot;/&quot;, streamHandler)
+	mux.Handle(RaftSnapshotPrefix, snapHandler)
+	mux.Handle(ProbingPrefix, probing.NewHandler())
+	return mux
+}
+</code></pre><h2 id="处理服务">处理服务</h2>
+<p>上节提到的streamHandler，这个handler用于处理server之间的心跳、投票、附加日志等请求的发送，该handler的ServeHTTP代码核心为</p>
+<pre><code>func (h *streamHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+......
+	p.attachOutgoingConn(conn)
+	&lt;-c.closeNotify()
+</code></pre><p>一旦接收到对端的连接，则把该连接attach到自己encoder的writer中，这样自己encoder和对端decoder就能协同工作了，</p>
+<p>对于每个节点，会主动去连接其他节点，连接成功后便通过自己的decoder循环读取该连接的数据，该节点通过该decoder读取其他节点发来的数据；</p>
+<p>当某节点收到其他节点连接请求并连接成功后便把该连接attach到该节点的encoder，该节点通过该encoder向其他节点发送数据；</p>
+<p>看其函数实现</p>
+<pre><code>func (p *peer) attachOutgoingConn(conn *outgoingConn) {
+	var ok bool
+	switch conn.t {
+	case streamTypeMsgAppV2:
+		ok = p.msgAppV2Writer.attach(conn)
+	case streamTypeMessage:
+		ok = p.writer.attach(conn)
+	default:
+		plog.Panicf(&quot;unhandled stream type %s&quot;, conn.t)
+	}
+	if !ok {
+		conn.Close()
+	}
+}
+</code></pre><p>其中<code>msgAppV2Writer</code>和<code>writer</code>都是一样的结构体<code>streamWriter</code></p>
+<pre><code>func (cw *streamWriter) attach(conn *outgoingConn) bool {
+	select {
+	case cw.connc &lt;- conn:
+		return true
+	case &lt;-cw.done:
+		return false
+	}
+}
+</code></pre><p>最终将该连接写入到cw.connc通道，下面看下streamWriter监听该通道的goroutine：</p>
+<pre><code>func (cw *streamWriter) run() {
+......
+		case conn := &lt;-cw.connc:
+......
+			switch conn.t {
+			case streamTypeMsgAppV2:
+				enc = newMsgAppV2Encoder(conn.Writer, cw.fs)
+			case streamTypeMessage:
+				enc = &amp;messageEncoder{w: conn.Writer}
+......
+</code></pre><p>当监听到cw.connc通道有数据时，获取该数据，即与其他某个server的连接，然后获取conn.Writer封装成一个encoder，用来将要发送的数据发送出去。</p>
+<p>在rc.transport.AddPeer方法中调用了startPeer方法，里面创建了streamReader，并开启了一个goroutine：</p>
+<pre><code>func (cr *streamReader) run() {
+	t := cr.typ
+
+	for {
+		rc, err := cr.dial(t)
+		if err != nil {
+        ......
+			}
+		} else {
+			cr.status.activate()
+			err = cr.decodeLoop(rc, t)
+
+.......
+</code></pre><p>通过rc, err := cr.dial(t)与对端建立连接，在err := cr.decodeLoop(rc, t)中循环读取该连接的数据：</p>
+<h1 id="集群选举与日志">集群选举与日志</h1>
+<h2 id="定时器">定时器</h2>
+<p>raft协议以定时器为基础来选举,有两种定时器,选举定时器和心跳定时器,选举定时器默认1000ms, 心跳定时器默认100ms.</p>
+<p>实际在代码中, 只定义了一个定时器, <strong>用一个定时器来管理2个定时逻辑</strong></p>
+<p>在raft结构体中, 有如下参数和定时器有关</p>
+<pre><code>type raft struct {
+......
+
+	// Leader才会有的心跳计数器,注意是计算器而不是定时器
+	heartbeatElapsed int
+
+	heartbeatTimeout int
+	electionTimeout  int
+
+	randomizedElectionTimeout int //范围是[electiontimeout, 2 * electiontimeout)
+
+    /* tick是超时定时器的callback, Follower、Candidate、PreCandidate的tick值为tickElection, Leader值为tickHeartbeat */
+	tick func()
+}
+</code></pre><p><code>tickElection()</code>和 <code>tickHeartbeat()</code>较简单可以自己分析</p>
+<h2 id="raft集群节点">raft集群节点</h2>
+<p>集群中每个节点, 定义为一个结构体</p>
+<pre><code>type raftNode struct {
+	proposeC    &lt;-chan string            // proposed messages (k,v)
+	confChangeC &lt;-chan raftpb.ConfChange // proposed cluster config changes
+	commitC     chan&lt;- *string           // entries committed to log (k,v)
+	errorC      chan&lt;- error             // errors from raft session
+
+	id          int      // client ID for raft session
+	peers       []string // raft peer URLs
+	join        bool     // node is joining an existing cluster
+	waldir      string   // path to WAL directory
+	snapdir     string   // path to snapshot directory
+	getSnapshot func() ([]byte, error)
+	lastIndex   uint64 // index of log at start
+
+	confState     raftpb.ConfState
+	snapshotIndex uint64
+	appliedIndex  uint64
+
+	// raft backing for the commit/error channel
+	node        raft.Node
+	raftStorage *raft.MemoryStorage
+	wal         *wal.WAL
+
+	snapshotter      *snap.Snapshotter
+	snapshotterReady chan *snap.Snapshotter // signals when snapshotter is ready
+
+	snapCount uint64
+	transport *rafthttp.Transport
+	stopc     chan struct{} // signals proposal channel closed
+	httpstopc chan struct{} // signals http server to shutdown
+	httpdonec chan struct{} // signals http server shutdown complete
+}
+</code></pre><p>其运行函数为<code>(rc *raftNode) serveChannels()</code></p>
+<p>入口定义一个定时器, <code>ticker := time.NewTicker(100 * time.Millisecond)</code>, 每隔100ms触发一次, 每次触发该100ms定时事件,</p>
+<pre><code>	for {
+		select {
+		case &lt;-ticker.C:
+			rc.node.Tick()
+</code></pre><p>raftNode会向node的n.tickc通道写入事件，这样相当于node有了一个每隔100ms触发一次的时钟信号</p>
+<p>在node的一个routine中会监听r.msgs是否有消息要处理，有的话会将r.msgs封装成Ready写入到node的n.readyc通道，raftNode当监听到n.readyc通道有消息时会将消息写入到cw.msgc通道，streamWriter会把cw.msgc通道的消息发送到对应的server</p>
+<p>当对应peer的streamReader监听到p.recvc通道有事件并且事件为投票响应消息时会将消息写入到node的n.recvc通道，node根据投票响应结果统计投赞成票的server个数，如果超过半数则变为leader.</p>
+<h2 id="投票条件">投票条件</h2>
+<p><code>/raft/raft.go</code>的<code>Step()</code>函数为投票的处理函数, 来看看收到投票请求的时候, 对应的代码</p>
+<pre><code>	case pb.MsgVote, pb.MsgPreVote:
+		if r.isLearner {
+			return nil
+		}
+
+		if (r.Vote == None || m.Term &gt; r.Term || r.Vote == m.From) &amp;&amp; r.raftLog.isUpToDate(m.Index, m.LogTerm) {
+			r.send(pb.Message{To: m.From, Term: m.Term, Type: voteRespMsgType(m.Type)})
+			if m.Type == pb.MsgVote {
+				r.electionElapsed = 0
+				r.Vote = m.From
+			}
+</code></pre><p>看投赞成票的条件<code>r.raftLog.isUpToDate(m.Index, m.LogTerm)</code></p>
+<pre><code>func (l *raftLog) isUpToDate(lasti, term uint64) bool {
+	return term &gt; l.lastTerm() || (term == l.lastTerm() &amp;&amp; lasti &gt;= l.lastIndex())
+}
+</code></pre><p><code>m.Index</code>为candicate的最新日志的索引位置，即参数中的<code>lasti</code>，<code>m.LogTerm</code>为candicate最新日志的任期号，即参数中的<code>term</code>。</p>
+<p>赞成条件为candicate的最新日志的任期号比follower的最新日志的任期号大<code>term &gt; l.lastTerm()</code>，或者在双方最新日志任期号相同的情况下，candicate最新日志的索引位置要比follower的最新日志索引位置大，即比follower的日志更新 <code>term == l.lastTerm() &amp;&amp; lasti &gt;= l.lastIndex()</code></p>
+<p>然后回应<code>myVoteRespType</code>消息, candicate在<code>stepCandicate()</code>函数中判断投票数是否超过半数来决定是否升级为leader.</p>
+<h2 id="日志追加">日志追加</h2>
+<p><strong>只有leader节点可以写日志</strong></p>
+<p>在candicate升级为leader之后,会定期发送心跳消息到其他节点</p>
+<p>并且在每次收到follower的心跳回复后，会根据follower与leader自己的日志对比将没发送的日志发送给follower</p>
+<p>在<code>(r *raft) sendHeartbeat()</code>可以看到心跳消息如下:</p>
+<pre><code>pb.Message{
+    To:      to,
+    Type:    pb.MsgHeartbeat,
+    Commit:  commit,   //leader的日志当前提交的索引
+    Context: ctx,
+}
+</code></pre><p>在<code>stepCandidate()</code>和<code>stepFollower()</code>中都会响应<code>pb.MsgHeartbeat</code>消息,调用<code>handleHeartbeat()</code> (其中Candidate会先变成Follower, 因为心跳消息代表集群已经有leader了)</p>
+<pre><code>func (r *raft) handleHeartbeat(m pb.Message) {
+	r.raftLog.commitTo(m.Commit)
+	r.send(pb.Message{To: m.From, Type: pb.MsgHeartbeatResp, Context: m.Context})
+}
+</code></pre><p>follower会根据leader的心跳请求中的日志提交位置信息，将自己的日志提交索引设置到对应的位置，并发送心跳响应给leader</p>
+<p>当leader在函数<code>stepLeader()</code>收到follower的心跳响应<code>pb.MsgHeartbeatResp</code>后，会比较该follower与leader日志的匹配位置<code>pr.Match</code>与leader日志的最新位置，如果两个位置不相等，说明还有日志需要发送给该follower，最终使得该follower的日志追上leader的日志。</p>
+<pre><code>if pr.Match &lt; r.raftLog.lastIndex() {
+        r.sendAppend(m.From)
+    }
+</code></pre><p><code>sendAppend()</code></p>
+<pre><code>//消息的发送目的server的id
+m.To = to
+
+term, errt := r.raftLog.term(pr.Next - 1)
+ents, erre := r.raftLog.entries(pr.Next, r.maxMsgSize)
+...
+
+//消息类型：附加日志消息
+m.Type = pb.MsgApp
+//上一次发送给该follower的日志索引
+m.Index = pr.Next - 1
+//上一次发送给该follower的日志的任期号
+m.LogTerm = term
+//要发送的日志条目
+m.Entries = ents
+//leader的日志提交位置
+m.Commit = r.raftLog.committed
+if n := len(m.Entries); n != 0 {
+    switch pr.State {
+    // optimistically increase the next when in ProgressStateReplicate
+    case ProgressStateReplicate:
+        last := m.Entries[n-1].Index
+        pr.optimisticUpdate(last)
+        pr.ins.add(last)
+    case ProgressStateProbe:
+        pr.pause()
+    default:
+        r.logger.Panicf(&quot;%x is sending append in unhandled state %s&quot;, r.id, pr.State)
+    }
+}
+r.send(m)
+
+</code></pre><p>pr.Next表示要发给该follower的下一条日志的索引，pr.Next－1表示上一次发给该follower的日志，因此r.raftLog.term(pr.Next - 1)表示上次发给该follower的日志的任期号，r.raftLog.entries(pr.Next, r.maxMsgSize)表示从从leader日志中取出要发给该follower的日志条目</p>
+<p>follower响应如下:</p>
+<pre><code>case pb.MsgApp:
+    r.electionElapsed = 0
+    r.lead = m.From
+    r.handleAppendEntries(m)
+</code></pre><p>handleAppendEntries方法如下：</p>
+<pre><code>func (r *raft) handleAppendEntries(m pb.Message) {
+    // m.Index表示leader发送给follower的上一条日志的索引位置，
+    // 如果当前follower在该位置的日志已经提交过了(有可能该leader是刚选举产生的，没有follower的日志信息，所以设置m.Index=0)，
+    // 则把follower当前提日志交的索引位置告诉leader，让leader从该follower提交位置的下一条位置的日志开始发送给follower
+    if m.Index &lt; r.raftLog.committed {
+        r.send(pb.Message{To: m.From, Type: pb.MsgAppResp, Index: r.raftLog.committed})
+        return
+    }
+    //将日志追加到follower的日志中，可能存在冲突，因此需要先找到冲突的位置，然后用leader发送来的日志中从冲突位置开始覆盖follower的日志
+    if mlastIndex, ok := r.raftLog.maybeAppend(m.Index, m.LogTerm, m.Commit, m.Entries...); ok {
+        //mlastIndex为follower已经追加好的最新日志的位置，追加成功后要把该信息告诉leader，以便leader会把该位置之后的日志再发送给该follower
+        r.send(pb.Message{To: m.From, Type: pb.MsgAppResp, Index: mlastIndex})
+    } else {
+        r.logger.Debugf(&quot;%x [logterm: %d, index: %d] rejected msgApp [logterm: %d, index: %d] from %x&quot;,
+        r.id, r.raftLog.zeroTermOnErrCompacted(r.raftLog.term(m.Index)), m.Index, m.LogTerm, m.Index, m.From)
+        // 如果leader与follower的日志还没有匹配上，那么把follower的最新日志的索引位置告诉leader，
+        // 以便leader下一次从该follower的最新日志位置之后开始尝试发送附加日志，直到leader与follower的日志匹配上了就能追加日志成功了
+        r.send(pb.Message{To: m.From, Type: pb.MsgAppResp, Index: m.Index, Reject: true, RejectHint: r.raftLog.lastIndex()})
+    }
+}
+</code></pre><p>r.raftLog.maybeAppend方法是将leader发送过来的日志追加到follower本地的方法，但如果leader发送过来的日志与follower的日志无法匹配(follower在index位置的日志的任期号不是logTerm)，则要把拒绝追加日志信息发送给leader，包含follower的最新日志位置，以便leader下一次从该位置尝试匹配，如下</p>
+<pre><code>func (l *raftLog) maybeAppend(index, logTerm, committed uint64, ents ...pb.Entry) (lastnewi uint64, ok bool) {
+    //index，logTerm为leader上次发送给该follower的日志索引和日志的term，committed是可以提交的日志索引，ents为发过来的日志条目
+    //只有follower能够匹配eader上次发送的日志索引和term，才能正常响应
+    if l.matchTerm(index, logTerm) {
+        //最新的日志索引
+        lastnewi = index + uint64(len(ents))
+        //获取冲突的日志索引，有些情况下leader发过来的日志不能直接追加，索引需要找到最新匹配的位置，从该位置之后的日志全部被leader覆盖
+        ci := l.findConflict(ents)
+        switch {
+        case ci == 0:
+        case ci &lt;= l.committed:
+            l.logger.Panicf(&quot;entry %d conflict with committed entry [committed(%d)]&quot;, ci, l.committed)
+        default:
+            offset := index + 1
+            //取出从冲突的位置开始的日志，覆盖自己的日志，即出现冲突时以leader的日志为准
+            l.append(ents[ci-offset:]...)
+        }
+        //如果leader的已提交的日志索引大于leader复制给当前follower的最新日志的索引，说明follower落后了，对于这次复制来的日志全都直接提交，否则提交leader已经提交的日志索引的日志
+         l.commitTo(min(committed, lastnewi))
+        return lastnewi, true
+    }
+    return 0, false
+}
+</code></pre><p>leader收到响应又会怎么处理呢?</p>
+<p>raft的<code>stepLeader()</code>方法</p>
+<pre><code>case pb.MsgAppResp:
+    pr.RecentActive = true
+
+    if m.Reject {
+        //如果处于ProgressStateReplicate状态，则将pr.Next降低为pr.Match + 1，以便去和follower的日志进行匹配
+        if pr.maybeDecrTo(m.Index, m.RejectHint) {
+            r.logger.Debugf(&quot;%x decreased progress of %x to [%s]&quot;, r.id, m.From, pr)
+            //如果处于ProgressStateReplicate状态，则转变为ProgressStateProbe状态，去探测follower的匹配位置
+            if pr.State == ProgressStateReplicate {
+                pr.becomeProbe()
+            }
+            r.sendAppend(m.From)
+        }
+    } else {
+        oldPaused := pr.IsPaused()
+        //m.Index为follower的最新日志索引位置，根据该位置更新pr.Match和pr.Next, pr.Match=m.Index, pr.Next=m.Index+1
+        if pr.maybeUpdate(m.Index) {
+            switch {
+            //一旦追加日志成功，则从ProgressStateProbe状态转变为ProgressStateReplicate状态，加快日志追加过程
+            case pr.State == ProgressStateProbe:
+                pr.becomeReplicate()
+            case pr.State == ProgressStateSnapshot &amp;&amp; pr.needSnapshotAbort:
+                pr.becomeProbe()
+            case pr.State == ProgressStateReplicate:
+                //pr.ins用于限制发送消息的速率，当发送时将日志索引写入到pr.ins，pr.ins有数量限制，当发送消息收到回复后再把pr.ins中该发送成功日志的索引在pr.ins中移除掉
+                pr.ins.freeTo(m.Index)
+            }
+
+            //收到follower的日志追加成功响应后判断是否能commit一部分日志
+            if r.maybeCommit() {
+                //向其他follower发送commit日志消息
+                r.bcastAppend()
+            } else if oldPaused {
+                // update() reset the wait state on this node. If we had delayed sending
+                // an update before, send it now.
+                r.sendAppend(m.From)
+            }
+            // Transfer leadership is in progress.
+            if m.From == r.leadTransferee &amp;&amp; pr.Match == r.raftLog.lastIndex() {
+                r.sendTimeoutNow(m.From)
+            }
+        }
+    }
+</code></pre><p>当leader收到附加日志拒绝消息时，说明p.Next太大了，而follower在p.Next-1位置的日志没有与follower匹配上，需要将p.Next降低为p.Match+1。然后转变为ProgressStateProbe状态，去探测follower与leader的日志匹配位置</p>
+<p>当leader收到附加日志成功消息时，则要更新pr.Match和pr.Next，m.Index是follower的最新日志位置，要设置pr.Match=m.Index, pr.Next=m.Index+1。每次附加日志成功，就尝试提交下可以提交的日志(r.maybeCommit())，如果日志复制到了过半数server，说明可以提交了，便向其他follower发送日志提交请求(r.bcastAppend())</p>
+<pre><code>func (r *raft) maybeCommit() bool {
+   mis := make(uint64Slice, 0, len(r.prs))
+  for id := range r.prs {
+      mis = append(mis, r.prs[id].Match)
+  }
+  //mis中保存着复制到每个server节点的日志索引，这里进行从大到小排序
+  sort.Sort(sort.Reverse(mis))
+  //如果节点数量为5，r.quorum()-1＝2，则在5个节点中日志第三新的节点的最新日志索引就是复制到过半数节点的日志索引，这个位置的日志可以提交啦
+  mci := mis[r.quorum()-1]
+  //尝试提交日志
+  return r.raftLog.maybeCommit(mci, r.Term)
+}
+
+</code></pre><h1 id="添加配置">添加配置</h1>
+<p>raftNode监听<code>proposeC</code>这个channel, Leader节点的<code>stepLeader()</code>方法中, 会监听<code>MsgProp消息</code>, 该集群变更作为日志追加到本地<code>r.appendEntry(m.Entries...)</code>, 然后向其他follower发送附加日志<code>rpc：r.bcastAppend()</code>, 向<code>n.confc</code>通道写入集群变更消息, 过程比较类似就不详细分析了.</p>
+
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E7%BD%91%E7%BB%9C/">Etcd源码分析之网络</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%90%AF%E5%8A%A8%E7%AF%87/">Etcd源码分析之启动篇</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/chenzongshu.github.io/tags/etcd'>Etcd</a></li>
+                
+                <li><a href='/chenzongshu.github.io/tags/%E6%BA%90%E7%A0%81'>源码</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="chenzongshu.github.io/chenzongshu.github.io">蜗牛龙门阵 By chenzongshu</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/chenzongshu.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="chenzongshu.github.io">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/" title="容器江湖闲话">容器江湖闲话</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/" title="六、监控体系">六、监控体系</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/" title="五、EFK">五、EFK</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/" title="四、Harbor镜像仓库">四、Harbor镜像仓库</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/" title="三、Helm和Ingress">三、Helm和Ingress</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/" title="一、容器云架构介绍">一、容器云架构介绍</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Etcd源码分析之磁盘写入及操作">Etcd源码分析之磁盘写入及操作</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/" title="Etcd源码分析之存储">Etcd源码分析之存储</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/" title="Etcd源码分析之put流程">Etcd源码分析之put流程</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="chenzongshu.github.io/categories/etcd/">Etcd (6)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/kubernetes/">kubernetes (1)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA/">容器平台搭建 (6)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="chenzongshu.github.io/tags/etcd/">Etcd</a>
+    
+    <a href="chenzongshu.github.io/tags/kubernetes/">kubernetes</a>
+    
+    <a href="chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8/">容器</a>
+    
+    <a href="chenzongshu.github.io/tags/%E6%BA%90%E7%A0%81/">源码</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="chenzongshu.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

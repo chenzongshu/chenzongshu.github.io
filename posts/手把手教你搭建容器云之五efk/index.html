@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>五、EFK | 蜗牛龙门阵</title>
+    <meta property="og:title" content="五、EFK - 蜗牛龙门阵">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2020-05-01T00:00:00&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-05-01T00:00:00&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,java,博客,项目管理">
+    <meta name="description" content="五、EFK">
+        
+    <meta name="author" content="chenzongshu">
+    <meta property="og:url" content="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/">
+    <link rel="shortcut icon" href='/chenzongshu.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/chenzongshu.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="chenzongshu.github.io/chenzongshu.github.io">
+                        蜗牛龙门阵
+                    </a>
+                
+                <p class="description">专注容器等IT技术</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="" href="chenzongshu.github.io/chenzongshu.github.io">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#安装">安装</a></li>
+    <li><a href="#配置">配置</a>
+      <ul>
+        <li><a href="#参数">参数</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">五、EFK</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年5月1日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA'>容器平台搭建</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <h1 id="前言">前言</h1>
+<p>在私有云平台中，日志系统也是重要的一部分，采集收集归纳是必不可少的，在kubernetes容器云中，我们采用标准的EFK来集成。</p>
+<p>日志系统有多种套件，ELK（Elasticsearch、Logstash、Kibana）和EFK（Elasticsearch、Filebeat/Fluent、Kibana）, 其中ES是日志存储分析的核心引擎，在搜索领域应用也非常广泛， Logstash/Filebeat/Fluent是日志的采集端，不过Filebeat/Fluent更加轻量级，对资源消耗更小，各大公有云厂商都是自研的采集插件</p>
+<p>在大型的日志系统中，日志量过大时，ES前端往往会集成kafka或者redis，用于缓存日志数据。在私有云中，我们只需要ES配合采集端加上Kibana显示就可以了</p>
+<h1 id="es安装">ES安装</h1>
+<p>为了简化过程我们通过Helm来安装ES, 官方chart地址为  <a href="https://github.com/elastic/helm-charts">https://github.com/elastic/helm-charts</a> ， 可以从helm的repo源下载也可以直接从github上下载chart</p>
+<p>增加官方repo源地址</p>
+<pre><code>helm repo add elastic https://helm.elastic.co
+</code></pre><p>下载chart</p>
+<pre><code>helm fetch elastic/elasticsearch
+</code></pre><p>或者从github下载对应分支，这里采用github上下载的chart</p>
+<pre><code>git chone https://github.com/elastic/helm-charts.git
+</code></pre><p>查看目录，有如下目录，里面有多个chart，包括kibana，filebeat</p>
+<pre><code>drwxrwxr-x 5 root root  4096 12月  3 17:04 apm-server
+-rw-r--r-- 1 root root 10734 12月  3 17:04 CONTRIBUTING.md
+drwxrwxr-x 5 root root  4096 12月  3 18:02 elasticsearch
+drwxrwxr-x 5 root root  4096 12月  3 17:41 filebeat
+drwxrwxr-x 4 root root  4096 12月  3 17:04 helpers
+drwxrwxr-x 5 root root  4096 12月  4 15:08 kibana
+-rw-r--r-- 1 root root 11357 12月  3 17:04 LICENSE
+drwxrwxr-x 5 root root  4096 12月  3 17:04 logstash
+-rw-r--r-- 1 root root    26 12月  3 17:04 Makefile
+drwxrwxr-x 5 root root  4096 12月  3 17:04 metricbeat
+-rw-r--r-- 1 root root  6898 12月  3 17:04 README.md
+-rw-r--r-- 1 root root   173 12月  3 17:04 requirements.txt
+</code></pre><p>查看es的chart, 修改value.yaml文件参数, 主要是修改卷大小, 从30G改为5G</p>
+<pre><code>volumeClaimTemplate:
+  accessModes: [ &quot;ReadWriteOnce&quot; ]
+  resources:
+    requests:
+      storage: 5Gi
+</code></pre><p>使用localpath方式创建几个PV （生产环境不能使用locallocalpath）</p>
+<pre><code>apiVersion: &quot;v1&quot;
+kind: &quot;PersistentVolume&quot;
+metadata:
+  name: &quot;elasticsearch-master-elasticsearch-master-0&quot;
+spec:
+  capacity:
+    storage: &quot;5Gi&quot;
+  accessModes:
+    - &quot;ReadWriteOnce&quot;
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /root/esdata
+</code></pre><ul>
+<li>使用名字自动匹配，建三个pv，分别是 xxx-0，xxx-1，xxx-2；</li>
+<li>每个节点新建<code>/root/esdata</code>，<strong>并修改权限 <code>chown -R 1000:1000 esdata/</code></strong>，否则会报错</li>
+</ul>
+<p>安装，可以自建ns，也可以挂在default的ns下面</p>
+<pre><code># 第一个elasticsearch是helm中的名字，第二个参数是目录
+helm install elasticsearch ./es-chart/elasticsearch
+</code></pre><p>可以看到Pod启动成功</p>
+<pre><code>[root@node000006 ~]# kubectl get po
+NAME                     READY   STATUS    RESTARTS   AGE
+elasticsearch-master-0   1/1     Running   0          17m
+elasticsearch-master-1   1/1     Running   0          17m
+elasticsearch-master-2   1/1     Running   0          17m
+</code></pre><h1 id="kibana">Kibana</h1>
+<p>如果是github上下载的，自带了kibana的chart</p>
+<p>为了方便访问kibana，把service的方式修改成nodePort方式，修改其values.yaml文件</p>
+<pre><code>service:
+  type: NodePort
+  loadBalancerIP: &quot;&quot;
+  port: 5601
+  nodePort: &quot;30001&quot;
+</code></pre><p>然后安装</p>
+<pre><code>helm install kibana ./es-chart/kibana
+</code></pre><p>可以看到成功运行的Pod</p>
+<pre><code>[root@node000006 ~]# kubectl get po|grep kibana
+kibana-kibana-5679f8777d-bzgzr   1/1     Running   0          13m
+</code></pre><h1 id="filebeat">Filebeat</h1>
+<h2 id="安装">安装</h2>
+<p>如果ES和filebeat不在一个集群，需要修改es的地址，这里在一起就不修改了</p>
+<pre><code>helm install filebeat es-chart/filebeat
+</code></pre><p>可以看到po已经运行</p>
+<pre><code>[root@node000006 ~]# kubectl get po -l app=filebeat-filebeat
+NAME                      READY   STATUS    RESTARTS   AGE
+filebeat-filebeat-4gxvl   1/1     Running   0          29m
+filebeat-filebeat-dzcns   1/1     Running   0          29m
+filebeat-filebeat-sgg8n   1/1     Running   0          29m
+filebeat-filebeat-vqq6x   1/1     Running   0          29m
+filebeat-filebeat-xtz98   1/1     Running   0          29m
+</code></pre><p>查看任意一个Pod的日志，可以看到启动了文件的harvester</p>
+<pre><code>2020-12-04T07:41:43.066Z	INFO	log/harvester.go:302	Harvester started for file: /var/log/containers/dns-autoscaler-565c5546-tcknc_kube-system_autoscaler-cca6f27e730e8afcec56ade7d4e2cefb2dd41606cb166603fd65c2f733c7e510.log
+2020-12-04T07:41:43.067Z	INFO	log/harvester.go:302	Harvester started for file: /var/log/containers/kube-apiserver-node1_kube-system_kube-apiserver-537540b9cedaec95cf0b2c32cdf0519b419c8c61b8c4ed5b8472390f33cc336a.log
+</code></pre><h2 id="配置">配置</h2>
+<p><a href="https://arch-long.cn/articles/elasticsearch/FileBeat.html">https://arch-long.cn/articles/elasticsearch/FileBeat.html</a></p>
+<p>filebeat的配置文件，在Pod里面的 <code>/usr/share/filebeat/filebeat.yml</code>位置，是configmap映射过去的</p>
+<pre><code>[root@filebeat-filebeat-vqq6x /]# cat /usr/share/filebeat/filebeat.yml
+filebeat.inputs:
+- type: container
+  paths:
+    - /var/log/containers/*.log   #要监控的目录位置
+  processors:
+  - add_kubernetes_metadata:
+      host: ${NODE_NAME}
+      matchers:
+      - logs_path:
+          logs_path: &quot;/var/log/containers/&quot;
+
+output.elasticsearch:
+  host: '${NODE_NAME}'
+  hosts: '${ELASTICSEARCH_HOSTS:elasticsearch-master:9200}'
+</code></pre><p>这个配置是比较简单的，在生产上，需要增加更多的参数：</p>
+<pre><code>apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+  namespace: logging
+  labels:
+    k8s-app: filebeat
+    kubernetes.io/cluster-service: &quot;true&quot;
+data:
+  filebeat.yml: |-
+    filebeat.config:
+    #  inputs:
+    #    path: ${path.config}/inputs.d/*.yml
+    #    reload.enabled: true
+      modules:
+        path: ${path.config}/modules.d/*.yml
+        reload.enabled: true
+
+    filebeat.autodiscover:
+      providers:
+        - type: kubernetes
+          hints.enabled: true
+          include_annotations: [&quot;artifact.spinnaker.io/name&quot;,&quot;ad.datadoghq.com/tags&quot;]
+          include_labels: [&quot;app.kubernetes.io/name&quot;]
+          labels.dedot: true
+          annotations.dedot: true
+          templates:
+            - condition:
+                equals:
+                  kubernetes.namespace: myapp   #Set the namespace in which your app is running, can add multiple conditions in case of more than 1 namespace.
+              config:
+                - type: docker
+                  containers.ids:
+                    - &quot;${data.kubernetes.container.id}&quot;
+                  multiline:
+                    pattern: '^[A-Za-z ]+[0-9]{2} (?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)'.   #Timestamp regex for the app logs. Change it as per format. 
+                    negate: true
+                    match: after
+            - condition:
+                equals:
+                  kubernetes.namespace: elasticsearch
+              config:
+                - type: docker
+                  containers.ids:
+                    - &quot;${data.kubernetes.container.id}&quot;
+                  multiline:
+                    pattern: '^\[[0-9]{4}-[0-9]{2}-[0-9]{2}|^[0-9]{4}-[0-9]{2}-[0-9]{2}T'
+                    negate: true
+                    match: after
+                    
+    processors:
+      - add_cloud_metadata: ~
+      - drop_fields:
+          when:
+            has_fields: ['kubernetes.labels.app']
+          fields:
+            - 'kubernetes.labels.app'
+
+    output.elasticsearch:
+      hosts: ['${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
+</code></pre><ul>
+<li><strong>hints.enabled</strong>： 这将激活Filebeat的Kubernetes的hint模块。通过使用这个，我们可以使用pod注释直接将config传递给Filebeat pod。我们可以指定不同的多行模式和其他各种类型的配置。更多关于这方面的内容可以访问以下链接：https://www.elastic.co/guide/en/beats/filebeat/current/configuration-autodiscover-hints.html</li>
+<li><strong>include_annotations</strong>： 将此设置为 “true”，可以让Filebeat保留特定日志条目的任何pod注释。这些注释可以在以后用于在Kibana控制台中过滤日志。</li>
+<li><strong>include_labels:</strong>  将此设置为 “true”，可以让Filebeat保留特定日志条目的任何pod标签，这些标签以后可以用于在Kibana控制台中过滤日志。</li>
+<li>我们还可以针对特定的命名空间过滤日志，然后可以对日志条目进行相应的处理。这里使用的是docker日志处理器。我们也可以针对不同的命名空间使用不同的多行模式。</li>
+</ul>
+<h3 id="参数">参数</h3>
+<h4 id="processor">processor</h4>
+<p>filebeat对于收集的每行日志都封装成event， event 发送到 output 之前，可在配置文件中定义processors去处理 event。如果是一系列的processor，会按顺序执行。processor作用：</p>
+<ul>
+<li>减少导出的字段</li>
+<li>添加其他metadata</li>
+<li>执行额外的处理和解码</li>
+</ul>
+<p>processor 有两个基本构建块。<code>Indexers</code>和<code>Matchers</code>。</p>
+<p><code>Indexers</code> 接收pod元数据并根据pod元数据构建索引。例如：<code>ip_port</code>indexer可以使用kubernetes pod并根据所有<code>pod_ip:container_port</code>组合、索引元数据。</p>
+<p><code>Matchers</code> 用于构造查询索引的查找键。例如：当字段匹配器将<code>[&quot;metricset.host&quot;]</code>作为查找字段时，它将用字段<code>metricset.host</code>的值构造一个查找键。</p>
+<p>filebeat默认带了<code>add_kubernetes_metadata</code>的processor，详细配置见官方文档：<a href="https://www.elastic.co/guide/en/beats/filebeat/current/add-kubernetes-metadata.html">add_kubernetes_metadata</a></p>
+<h4 id="autodiscover">autodiscover</h4>
+<p><code>autodiscover</code>是filebeat针对容器的配置，定义在<code>filebeat.yml</code>配置文件中。</p>
+<p>它提供了3种provider，包括docker和kubernetes，分别针对的观测项有所不同。官方链接地址是 <a href="https://www.elastic.co/guide/en/beats/filebeat/current/configuration-autodiscover.html">autodiscover</a></p>
+<h4 id="输出">输出</h4>
+<p>默认是输出到es，如果我要输出到其他端，可以配置其他输出，见官方链接 <a href="https://www.elastic.co/guide/en/beats/filebeat/current/configuring-output.html">filebeat输出配置</a></p>
+<p>例如我们要输出到kafka</p>
+<pre><code>output.kafka:
+  # initial brokers for reading cluster metadata
+  hosts: [&quot;kafka1:9092&quot;, &quot;kafka2:9092&quot;, &quot;kafka3:9092&quot;]
+
+  # message topic selection + partitioning
+  topic: '%{[fields.log_topic]}'
+  partition.round_robin:
+    reachable_only: false
+
+  required_acks: 1
+  compression: gzip
+  max_message_bytes: 1000000
+</code></pre>
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/">四、Harbor镜像仓库</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/">三、Helm和Ingress</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/">一、容器云架构介绍</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">Etcd源码分析之磁盘写入及操作</a></li>
+        
+        <li><a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/">Etcd源码分析之存储</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/chenzongshu.github.io/tags/kubernetes'>kubernetes</a></li>
+                
+                <li><a href='/chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8'>容器</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="chenzongshu.github.io/chenzongshu.github.io">蜗牛龙门阵 By chenzongshu</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/chenzongshu.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="chenzongshu.github.io">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/" title="容器江湖闲话">容器江湖闲话</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/" title="六、监控体系">六、监控体系</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/" title="五、EFK">五、EFK</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/" title="四、Harbor镜像仓库">四、Harbor镜像仓库</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/" title="三、Helm和Ingress">三、Helm和Ingress</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/" title="一、容器云架构介绍">一、容器云架构介绍</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Etcd源码分析之磁盘写入及操作">Etcd源码分析之磁盘写入及操作</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/" title="Etcd源码分析之存储">Etcd源码分析之存储</a>
+    </li>
+    
+    <li>
+        <a href="chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/" title="Etcd源码分析之put流程">Etcd源码分析之put流程</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="chenzongshu.github.io/categories/etcd/">Etcd (6)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/kubernetes/">kubernetes (1)</a></li>
+    
+    <li><a href="chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA/">容器平台搭建 (6)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/chenzongshu.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="chenzongshu.github.io/tags/etcd/">Etcd</a>
+    
+    <a href="chenzongshu.github.io/tags/kubernetes/">kubernetes</a>
+    
+    <a href="chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8/">容器</a>
+    
+    <a href="chenzongshu.github.io/tags/%E6%BA%90%E7%A0%81/">源码</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="chenzongshu.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
