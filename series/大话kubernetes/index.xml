@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>大话kubernetes on 蜗牛龙门阵</title>
-    <link>chenzongshu.github.io/series/%E5%A4%A7%E8%AF%9Dkubernetes/</link>
+    <link>https://chenzongshu.github.io/series/%E5%A4%A7%E8%AF%9Dkubernetes/</link>
     <description>Recent content in 大话kubernetes on 蜗牛龙门阵</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Thu, 04 Feb 2021 00:00:00 +0000</lastBuildDate><atom:link href="chenzongshu.github.io/series/%E5%A4%A7%E8%AF%9Dkubernetes/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 04 Feb 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://chenzongshu.github.io/series/%E5%A4%A7%E8%AF%9Dkubernetes/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>容器江湖闲话</title>
-      <link>chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/</link>
+      <link>https://chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/</link>
       <pubDate>Thu, 04 Feb 2021 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/</guid>
+      <guid>https://chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/</guid>
       <description>引子 江湖永远不缺乏刀光剑影，鼓角争鸣。可能杰夫·贝佐斯不曾想到，他推出的AWS成了全球云计算IaaS和PaaS的霸主，从根本上改变了IT江湖的格局。
 但是各路诸侯从未放弃自己的勃勃野心
 近几年，云原生概念的提出，容器和kubernetes已经被炒作的非常火热了，甚至传统行业都开始拥抱容器，采用容器平台作为其基础架构

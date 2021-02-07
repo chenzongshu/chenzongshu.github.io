@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>蜗牛龙门阵</title>
-    <link>chenzongshu.github.io/</link>
+    <link>https://chenzongshu.github.io/</link>
     <description>Recent content on 蜗牛龙门阵</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Thu, 04 Feb 2021 00:00:00 +0000</lastBuildDate><atom:link href="chenzongshu.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 04 Feb 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://chenzongshu.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>容器江湖闲话</title>
-      <link>chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/</link>
+      <link>https://chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/</link>
       <pubDate>Thu, 04 Feb 2021 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/</guid>
+      <guid>https://chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/</guid>
       <description>引子 江湖永远不缺乏刀光剑影，鼓角争鸣。可能杰夫·贝佐斯不曾想到，他推出的AWS成了全球云计算IaaS和PaaS的霸主，从根本上改变了IT江湖的格局。
 但是各路诸侯从未放弃自己的勃勃野心
 近几年，云原生概念的提出，容器和kubernetes已经被炒作的非常火热了，甚至传统行业都开始拥抱容器，采用容器平台作为其基础架构
@@ -30,10 +30,10 @@ CoreOS的核心招式就是提供定制化OS，分布式部署和管理节点，
     
     <item>
       <title>六、监控体系</title>
-      <link>chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/</link>
+      <link>https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/</link>
       <pubDate>Thu, 21 Jan 2021 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/</guid>
+      <guid>https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/</guid>
       <description>前言 监控也是运维体系中的重要的一环，云原生的监控体系基本是基于Promethus为核心的体系打造，这里我们使用kube-promethus项目
 kube-prometheus 是一整套监控解决方案，它使用 Prometheus 采集集群指标，Grafana 做展示，包含如下组件：
  The Prometheus Operator Highly available Prometheus Highly available Alertmanager Prometheus node-exporter Prometheus Adapter for Kubernetes Metrics APIs （k8s-prometheus-adapter） kube-state-metrics Grafana  部署 安装 下载，注意不同版本对应不同Kubernetes版本，注意切换版本</description>
@@ -41,20 +41,20 @@ kube-prometheus 是一整套监控解决方案，它使用 Prometheus 采集集�
     
     <item>
       <title>二、kubeadm安装Kubernetes</title>
-      <link>chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/</link>
+      <link>https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/</link>
       <pubDate>Mon, 15 Jun 2020 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/</guid>
+      <guid>https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/</guid>
       <description>准备 禁用swap Kubernetes 1.8开始要求必须禁用Swap，如果不关闭，默认配置下kubelet将无法启动。
 vim /etc/fstab # / was on /dev/sda1 during installation UUID=8cc33106-20fc-43b7-ad52-298eed8ccae6 / ext4 errors=remount-ro 0 1 #/swapfile none swap sw 0 0 把swapfile行注释掉后执行</description>
     </item>
     
     <item>
       <title>五、EFK</title>
-      <link>chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/</link>
+      <link>https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/</link>
       <pubDate>Fri, 01 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/</guid>
+      <guid>https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/</guid>
       <description>前言 在私有云平台中，日志系统也是重要的一部分，采集收集归纳是必不可少的，在kubernetes容器云中，我们采用标准的EFK来集成。
 日志系统有多种套件，ELK（Elasticsearch、Logstash、Kibana）和EFK（Elasticsearch、Filebeat/Fluent、Kibana）, 其中ES是日志存储分析的核心引擎，在搜索领域应用也非常广泛， Logstash/Filebeat/Fluent是日志的采集端，不过Filebeat/Fluent更加轻量级，对资源消耗更小，各大公有云厂商都是自研的采集插件
 在大型的日志系统中，日志量过大时，ES前端往往会集成kafka或者redis，用于缓存日志数据。在私有云中，我们只需要ES配合采集端加上Kibana显示就可以了
@@ -66,10 +66,10 @@ helm fetch elastic/elasticsearch 或者从github下载对应分支，这里采�
     
     <item>
       <title>四、Harbor镜像仓库</title>
-      <link>chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/</link>
+      <link>https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/</link>
       <pubDate>Fri, 17 Apr 2020 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/</guid>
+      <guid>https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/</guid>
       <description>我们在私有云中，往往需要构建自己的私有镜像，以提高镜像下载速度，而且结合CICD流程，方便构建流水线, 这里我们使用Harbor, 比起Docker原生的registry, 增加了权限管理, 镜像同步等功能, 比较适合生产应用
 Harbor官网有两种搭建方式 , 一种是使用Helm Chart, 一种是用docker compose
 对应的, 使用Chart来搭建的, 就是搭建在集群内部, docker compose搭建在集群外部
@@ -78,10 +78,10 @@ Kubernetes搭建 添加仓库 helm repo add harbor https://helm.</description>
     
     <item>
       <title>三、Helm和Ingress</title>
-      <link>chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/</link>
+      <link>https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/</link>
       <pubDate>Sat, 11 Apr 2020 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/</guid>
+      <guid>https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/</guid>
       <description>前言 在第二篇里面，我们安装了kubernetes集群和calico网络组件，一个基本的kubernetes集群已经能够正常工作了，但是在生产实际中，这是远远不够的，这篇里面，我们来安装Helm、ingress组件、Harbor、EFK、prometheus
 为了方便，我们使用Helm的chart来安装 ingress、harbor、EFK和Prometheus
 Helm 安装 可以到GitHub官网下载： https://github.com/helm/helm/releases ， 选择对应的版本即可，我们为了方便安装Helm3.X的版本
@@ -91,10 +91,10 @@ Helm 安装 可以到GitHub官网下载： https://github.com/helm/helm/releases
     
     <item>
       <title>一、容器云架构介绍</title>
-      <link>chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/</link>
+      <link>https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/</link>
       <pubDate>Fri, 10 Apr 2020 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/</guid>
+      <guid>https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/</guid>
       <description>前言 以docker和kubernetes为代表的的容器技术现在在市场上接受度越来越高，业界现在也有较多成熟产品，公有云有阿里华为腾通，私有云有OpenShift，才云，青云kubesphere，Rancher，灵雀云都做的不错， 为什么我们还折腾自建的容器平台？
  1、自己搭建过的东西更加有掌控力，据我交流，不少公司在体量到了一定程度之后都走上了自建的道路 2、自己搭建过后才对整体框架有了一个清晰的认知。  主要是结合自己的理解和实践，手把手教还不太熟悉容器的同学搭建一套自己的容器平台
 什么是容器云 不想去拷贝网上的各种文章，简单说下自己的理解，VM和容器的优劣不想过多讨论，但是谷歌错过了云计算的浪潮，让AWS占据先机之后，大力推动容器技术，也是想争夺话语权。至于docker和各个巨头的腥风血雨，更是一言难尽。
@@ -107,10 +107,10 @@ Helm 安装 可以到GitHub官网下载： https://github.com/helm/helm/releases
     
     <item>
       <title>Etcd源码分析之磁盘写入及操作</title>
-      <link>chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</link>
+      <link>https://chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</link>
       <pubDate>Thu, 08 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
+      <guid>https://chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
       <description>Etcd磁盘要求 官方原文链接: https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/hardware.md
 Etcd对磁盘写入延时非常敏感
 高速磁盘是保证etcd部署性能和稳定性的关键因素。
@@ -124,10 +124,10 @@ Etcd日志写入 etcd的存储分为内存存储和持久化（硬盘）存储�
     
     <item>
       <title>Etcd源码分析之存储</title>
-      <link>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/</link>
+      <link>https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/</link>
       <pubDate>Wed, 15 Aug 2018 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/</guid>
+      <guid>https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/</guid>
       <description>存储数据结构 Etcd存储在集群搭建和使用篇有简介，总结起来有如下特点：
  采用kv型数据存储，一般情况下比关系型数据库快。 支持动态存储(内存)以及静态存储(磁盘)。 分布式存储，可集成为多节点集群。 存储方式，采用类似目录结构。 1、只有叶子节点才能真正存储数据，相当于文件。 2、叶子节点的父节点一定是目录，目录不能存储数据。  叶子节点数据结构位于 /store/store.go
 type store struct { Root *node WatcherHub *watcherHub CurrentIndex uint64 Stats *Stats CurrentVersion int ttlKeyHeap *ttlKeyHeap // need to recovery manually worldLock sync.</description>
@@ -135,10 +135,10 @@ type store struct { Root *node WatcherHub *watcherHub CurrentIndex uint64 Stats 
     
     <item>
       <title>Etcd源码分析之put流程</title>
-      <link>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/</link>
+      <link>https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/</link>
       <pubDate>Fri, 10 Aug 2018 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/</guid>
+      <guid>https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/</guid>
       <description>put操作 put操作是etcd v3 client支持的命令，和v2的set用法差不多
 但是需要注意的是，如果你在一个3节点的etcd集群中，A节点切换为v3 client版本，然后put进了一对key-value，在B节点，还是v2的client，这个时候你get不到数据的，如果在B节点切换到了v3 client，这个时候才可以get到数据
 简单的说，v2和v3 client，插入数据到同一个etcd集群中，数据不能互通
@@ -148,10 +148,10 @@ func putCommandFunc(cmd *cobra.Command, args []string) { key, value, opts := get
     
     <item>
       <title>Etcd源码分析之raft协议</title>
-      <link>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Braft%E5%8D%8F%E8%AE%AE/</link>
+      <link>https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Braft%E5%8D%8F%E8%AE%AE/</link>
       <pubDate>Wed, 08 Aug 2018 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Braft%E5%8D%8F%E8%AE%AE/</guid>
+      <guid>https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Braft%E5%8D%8F%E8%AE%AE/</guid>
       <description>以etcd或者docker中的raft协议为列子,来解析raft协议的实际落地
 server通信 概述 server之前的消息传递并不是简单的request-response模型，而是读写分离模型，
 即每两个server之间会建立两条链路，对于每一个server来说，一条链路专门用来发送数据，另一条链路专门用来接收数据.
@@ -165,20 +165,20 @@ func (rc *raftNode) serveRaft() { ...... err = (&amp;amp;http.Server{Handler: rc
     
     <item>
       <title>Etcd源码分析之网络</title>
-      <link>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E7%BD%91%E7%BB%9C/</link>
+      <link>https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E7%BD%91%E7%BB%9C/</link>
       <pubDate>Wed, 08 Aug 2018 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E7%BD%91%E7%BB%9C/</guid>
+      <guid>https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E7%BD%91%E7%BB%9C/</guid>
       <description>配置文件 etcd配置文件位于/etc/etcd/etcd.conf,该配置文件一共有5个section
    名称 作用     member 本节点的配置，包括监听服务端口、心跳时间等   cluster 集群配置，包括集群状态、集群名称以及本节点广播地址   proxy 用于网络自动发现服务   security 安全配置   logging 日志功能组件    具体配置采集可以见另一个文章《Etcd集群配置和使用》</description>
     </item>
     
     <item>
       <title>Etcd源码分析之启动篇</title>
-      <link>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%90%AF%E5%8A%A8%E7%AF%87/</link>
+      <link>https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%90%AF%E5%8A%A8%E7%AF%87/</link>
       <pubDate>Wed, 01 Aug 2018 00:00:00 +0000</pubDate>
       
-      <guid>chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%90%AF%E5%8A%A8%E7%AF%87/</guid>
+      <guid>https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%90%AF%E5%8A%A8%E7%AF%87/</guid>
       <description>启动 启动从源码 /etcdmain/main.go 中的main函数开始
 func Main() { checkSupportArch() // 检查系统是否支持 if len(os.Args) &amp;gt; 1 { // 获取入参 cmd := os.Args[1] // 获取启动命令 if covArgs := os.</description>
     </item>
