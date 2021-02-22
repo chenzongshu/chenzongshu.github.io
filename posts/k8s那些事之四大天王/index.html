@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>k8s那些事之四大天王 | 蜗牛龙门阵</title>
+    <meta property="og:title" content="k8s那些事之四大天王 - 蜗牛龙门阵">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-02-06T00:00:00&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-02-06T00:00:00&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,java,博客,项目管理">
+    <meta name="description" content="k8s那些事之四大天王">
+        
+    <meta name="author" content="chenzongshu">
+    <meta property="og:url" content="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%9B%9B%E5%A4%A7%E5%A4%A9%E7%8E%8B/">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="https://chenzongshu.github.io/">
+                        蜗牛龙门阵
+                    </a>
+                
+                <p class="description">专注容器等IT技术</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="" href="https://chenzongshu.github.io/">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#拓扑状态">拓扑状态</a></li>
+    <li><a href="#存储状态">存储状态</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#job">Job</a></li>
+    <li><a href="#cronjob">Cronjob</a></li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">k8s那些事之四大天王</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年2月6日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B'>k8s那些事</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <blockquote>
+<p>本文不想对官方文档内容做过多的搬运，主要介绍一些自己的理解的总结和容易忽略的地方</p>
+</blockquote>
+<p>所谓四大天王指的就是Kubernetes的四个顶级资源模型deployment，statefset，daemonset和job/cronjob。也是大家了解的最多的概念。</p>
+<h1 id="deployment">Deployment</h1>
+<p>Deployment无状态应用, 作为Kubernetes应用的最早, 最广泛的资源类型, 为Kubernetes闻名天下立下了汗马功劳. 容器最早的推广就是无状态应用。</p>
+<p>所谓无状态应用，就是每个实例都是等幂而且有同样的上下文，可以任意销毁创建。</p>
+<p>但是Deployment并不直接操作Pod，中间还抽象了一层ReplicaSet，形成了 <code>应用</code> -&gt; <code>版本</code> -&gt; <code>副本</code> 的抽象层次</p>
+<pre><code>         ┌─────────────┐         
+         │ Deployment  │         -&gt; 在RS上面封装了生命周期
+         └─────────────┘         
+                │                
+                ▼                
+         ┌─────────────┐         
+         │ ReplicaSet  │         -&gt; 在Pod上面封装了个数等信息
+         └─────────────┘         
+                │                
+    ┌───────────┼───────────┐    
+    ▼           ▼           ▼    
+┌───────┐   ┌───────┐   ┌───────┐
+│  Pod  │   │  Pod  │   │  Pod  │
+└───────┘   └───────┘   └───────┘
+</code></pre><p><code>ReplicaSet</code>负责通过“控制器模式”，保证系统中 Pod 的个数永远等于指定的个数</p>
+<p><code>ReplicaSet</code>其实是Deployment中”版本“这个概念的实现，在RollingUpdate的时候，会多生成一个RS，然后新的RS慢慢增加Pod，老的RS慢慢减少Pod来完成滚动升级的。</p>
+<h1 id="statefulset">Statefulset</h1>
+<p>应用模型千差万别，特别是分布式系统中，有状态的应用非常之多，它多个实例之间，往往有依赖关系，比如:主从关系、主备关系。还有就是数据存储类应用，它的多个实例，往往都会在本地磁盘上保存一份数据。而这些实例一 旦被杀掉，即便重建出来，实例与数据之间的对应关系也已经丢失，从而导致应用失败。</p>
+<p>所以，这种实例之间有不对等关系，以及实例对外部数据有依赖关系的应用，就被称为“有状态 应用”</p>
+<p>statefulset, 从Kubernetes 1.9版本GA开始, 极大扩展了容器应用的边界。</p>
+<p>StatefulSet 抽象了2种情况：</p>
+<ul>
+<li>拓扑状态：即不同实例之间有先后顺序启动，删除也必须按照顺序来，删除掉再创建的实例必须要有一样的网络标识，这样原先的访问者才能使用同样的方法，访问到 这个新 Pod</li>
+<li>存储状态：多个实例分别绑定了不同的存储数据。对于这些应用实例来说，Pod A 第一次读取到的数据，和隔了十分钟之后再次读取到的数据，应该是同一 份，哪怕在此期间Pod A 被重新创建过。</li>
+</ul>
+<p>那么statefulset怎么解决上面两种问题呢？</p>
+<h2 id="拓扑状态">拓扑状态</h2>
+<p>比较简单，statefulset会给Pod名字编号，从0开始。而且<strong>这些 Pod 的创建也是严格按照编号顺序进行的</strong>。比如web-0创建不成功的时候，web-1不会创建，销毁的时候则是相反。</p>
+<p>此外，Kubernetes 还为每一个 Pod 提供了一个固定并且唯一的访问入口，即:这个 Pod 对应的 DNS 记录。格式是 <code>${PodName}.${HeadlessServiceName}</code>，不过，虽然DNS不变，但是Pod IP还是改变的，所以应该通过DNS来访问其Pod</p>
+<h2 id="存储状态">存储状态</h2>
+<p>我们来看看官网的例子</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#000080">apiVersion</span>:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#000080">kind</span>:<span style="color:#bbb"> </span>StatefulSet<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#000080">metadata</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#000080">name</span>:<span style="color:#bbb"> </span>web<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#000080">spec</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#000080">selector</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">matchLabels</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#000080">app</span>:<span style="color:#bbb"> </span>nginx<span style="color:#bbb"> </span><span style="color:#998;font-style:italic"># has to match .spec.template.metadata.labels</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#000080">serviceName</span>:<span style="color:#bbb"> </span><span style="color:#d14">&#34;nginx&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#000080">replicas</span>:<span style="color:#bbb"> </span><span style="color:#099">3</span><span style="color:#bbb"> </span><span style="color:#998;font-style:italic"># by default is 1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#000080">template</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">metadata</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#000080">labels</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#000080">app</span>:<span style="color:#bbb"> </span>nginx<span style="color:#bbb"> </span><span style="color:#998;font-style:italic"># has to match .spec.selector.matchLabels</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">spec</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#000080">terminationGracePeriodSeconds</span>:<span style="color:#bbb"> </span><span style="color:#099">10</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#000080">containers</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>- <span style="color:#000080">name</span>:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#000080">image</span>:<span style="color:#bbb"> </span>k8s.gcr.io/nginx-slim:0.8<span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#000080">ports</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>- <span style="color:#000080">containerPort</span>:<span style="color:#bbb"> </span><span style="color:#099">80</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span><span style="color:#000080">name</span>:<span style="color:#bbb"> </span>web<span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#000080">volumeMounts</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>- <span style="color:#000080">name</span>:<span style="color:#bbb"> </span>www<span style="color:#bbb">
+</span><span style="color:#bbb">          </span><span style="color:#000080">mountPath</span>:<span style="color:#bbb"> </span>/usr/share/nginx/html<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#000080">volumeClaimTemplates</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>- <span style="color:#000080">metadata</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#000080">name</span>:<span style="color:#bbb"> </span>www<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">spec</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#000080">accessModes</span>:<span style="color:#bbb"> </span>[<span style="color:#bbb"> </span><span style="color:#d14">&#34;ReadWriteOnce&#34;</span><span style="color:#bbb"> </span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#000080">storageClassName</span>:<span style="color:#bbb"> </span><span style="color:#d14">&#34;my-storage-class&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#000080">resources</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#000080">requests</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span><span style="color:#000080">storage</span>:<span style="color:#bbb"> </span>1Gi<span style="color:#bbb">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>StatefulSet 额外添加了一个 volumeClaimTemplates 字段。从名字就可以 看出来，它跟 Deployment 里 Pod 模板(PodTemplate)的作用类似。也就是说，凡是被这 个 StatefulSet 管理的 Pod，都会声明一个对应的 PVC;而这个 PVC 的定义，就来自于 volumeClaimTemplates 这个模板字段。更重要的是，这个 PVC 的名字，会被分配一个与这个 Pod 完全一致的编号。格式为<code>${PVC 名字}-${StatefulSet 名字}-${编号}</code></p>
+<h1 id="daemonset">Daemonset</h1>
+<p>Daemonset守护进程，就是每个Node给启动有且只有一个Pod，并且新节点加入集群之后也会自动创建该Pod。</p>
+<p>它可以在没有网络插件的情况下部署，意味着它本身就具备了和静态Pod差不多的特性。比如Flanneld，就可以通过Daemonset部署</p>
+<p>那么Kubernetes怎么保证每个节点上只有一个Pod呢？大家当然会脱口而出Controller，宾果。</p>
+<p>Controller首先从 Etcd 里获取所有的 Node 列表，然后遍历所有的Node。这时，它就可以很容易地去检查每个节点是否只有一个name=xxxx的Pod在运行，多的就干掉，少的就给新建。</p>
+<p>但是Controller给Daemonset Pod多干了2件事大家一定要注意：</p>
+<p>1、增加了一个nodeAffinity，通过节点亲和性，指定了这个Pod必须运行在某个节点上</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#000080">spec</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#000080">affinity</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">nodeAffinity</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#000080">requiredDuringSchedulingIgnoredDuringExecution</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#000080">nodeSelectorTerms</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>- <span style="color:#000080">matchFields</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>- <span style="color:#000080">key</span>:<span style="color:#bbb"> </span>metadata.name<span style="color:#bbb">
+</span><span style="color:#bbb">            </span><span style="color:#000080">operator</span>:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">            </span><span style="color:#000080">values</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>- node3<span style="color:#bbb">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>2、还有就是给Pod打了一堆容忍，以便初始化的时候跑到各个节点上</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#bbb">  </span><span style="color:#000080">tolerations</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>- <span style="color:#000080">effect</span>:<span style="color:#bbb"> </span>NoExecute<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">key</span>:<span style="color:#bbb"> </span>node.kubernetes.io/not-ready<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">operator</span>:<span style="color:#bbb"> </span>Exists<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>- <span style="color:#000080">effect</span>:<span style="color:#bbb"> </span>NoExecute<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">key</span>:<span style="color:#bbb"> </span>node.kubernetes.io/unreachable<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">operator</span>:<span style="color:#bbb"> </span>Exists<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>- <span style="color:#000080">effect</span>:<span style="color:#bbb"> </span>NoSchedule<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">key</span>:<span style="color:#bbb"> </span>node.kubernetes.io/disk-pressure<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">operator</span>:<span style="color:#bbb"> </span>Exists<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>- <span style="color:#000080">effect</span>:<span style="color:#bbb"> </span>NoSchedule<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">key</span>:<span style="color:#bbb"> </span>node.kubernetes.io/memory-pressure<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">operator</span>:<span style="color:#bbb"> </span>Exists<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>- <span style="color:#000080">effect</span>:<span style="color:#bbb"> </span>NoSchedule<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">key</span>:<span style="color:#bbb"> </span>node.kubernetes.io/pid-pressure<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">operator</span>:<span style="color:#bbb"> </span>Exists<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>- <span style="color:#000080">effect</span>:<span style="color:#bbb"> </span>NoSchedule<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">key</span>:<span style="color:#bbb"> </span>node.kubernetes.io/unschedulable<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#000080">operator</span>:<span style="color:#bbb"> </span>Exists<span style="color:#bbb">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>你也可以手动给他增加容忍，官方给的例子就加了一个容忍让该Pod跑到master上</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#000080">apiVersion</span>:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#000080">kind</span>:<span style="color:#bbb"> </span>DaemonSet<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#000080">metadata</span>:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>······<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#000080">spec</span>:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>······<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#000080">template</span>:<span style="color:#bbb">    
+</span><span style="color:#bbb">    </span><span style="color:#000080">spec</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#000080">tolerations</span>:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#998;font-style:italic"># this toleration is to have the daemonset runnable on master nodes</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#998;font-style:italic"># remove it if your masters can&#39;t run pods</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>- <span style="color:#000080">key</span>:<span style="color:#bbb"> </span>node-role.kubernetes.io/master<span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#000080">effect</span>:<span style="color:#bbb"> </span>NoSchedule<span style="color:#bbb">
+</span></code></pre></td></tr></table>
+</div>
+</div><h1 id="jobcronjob">Job/Cronjob</h1>
+<p>Job/Cronjob都是Kubernetes里面针对离线业务的资源对象，简单来说，就是只需要运行一次或多次的任务。</p>
+<h2 id="job">Job</h2>
+<p>Job其实就是一种Pod（里面是Pod模板），但是和普通的Pod有所不同：</p>
+<ul>
+<li>restartPolicy只能被设置为 Never 和 OnFailure，这项是针对Pod的，注意</li>
+<li>Job Controller 重新创建 Pod 的间隔是呈指数增加的，即下一次重新创建 Pod 的动作会分别发生在 10 s、20 s、40 s &hellip;后</li>
+<li>里面有多个参数可以控制Job中Pod的并行行为：
+<ul>
+<li><code>completions</code>：完成多少Pod数之后，代表Job完成；</li>
+<li><code>parallelism</code>： 最多可以同时运行的Pod数；</li>
+<li><code>activeDeadlineSeconds</code> ：Pod运行的最长时间，即如果Pod一直不Completed，过了该时间会被终止，可以在Pod状态里面看到终止原因是DeadlineExceeded</li>
+<li><code>ttlSecondsAfterFinished</code>：自动清理Complete或 Failed状态的Job的时间阈值</li>
+</ul>
+</li>
+</ul>
+<h2 id="cronjob">Cronjob</h2>
+<p>cronjob实际就是一个job的控制器，看官方示例：</p>
+<pre><code>apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+  schedule: &quot;*/1 * * * *&quot;
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: busybox
+            imagePullPolicy: IfNotPresent
+            args:
+            - /bin/sh
+            - -c
+            - date; echo Hello from the Kubernetes cluster
+          restartPolicy: OnFailure
+</code></pre><p>这就是一个jobTemplate加上一个标准的Unix Cron格式的表达式嘛，每隔一段时间，就会创建一个Job</p>
+<p>需要注意的点就是<strong>cronjob的时间基于kube-controller-manager所在的时间</strong></p>
+<p>附一个Cron时间表语法：</p>
+<pre><code># ┌───────────── 分钟 (0 - 59)
+# │ ┌───────────── 小时 (0 - 23)
+# │ │ ┌───────────── 月的某天 (1 - 31)
+# │ │ │ ┌───────────── 月份 (1 - 12)
+# │ │ │ │ ┌───────────── 周的某天 (0 - 6) （周日到周一；在某些系统上，7 也是星期日）
+# │ │ │ │ │                                   
+# │ │ │ │ │
+# │ │ │ │ │
+# * * * * *
+</code></pre><blockquote>
+<p>要生成 CronJob 时间表表达式，你还可以使用 <a href="https://crontab.guru/">crontab.guru</a> 之类的 Web 工具</p>
+</blockquote>
+<p>当然由于定时任务的特殊性，很可能某个 Job 还没有执行完，另外一个新 Job 就产生了。这时候，你可以通过 <code>spec.concurrencyPolicy</code> 字段来定义具体的处理策略</p>
+<ul>
+<li>Allow：这也是默认情况，这意味着这些 Job 可以同时存在;</li>
+<li>Forbid：这意味着不会创建新的 Pod，该创建周期被跳过;</li>
+<li>Replace：这意味着新产生的 Job 会替换旧的、没有执行完的 Job。</li>
+</ul>
+<p>从1.20版本，Kubernetes将会有cronjob v2新的资源类型进入alpha特性</p>
+
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E4%B8%87%E6%B3%95%E4%B9%8B%E6%BA%90pod/">k8s那些事之万法之源Pod</a></li>
+        
+        <li><a href="/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/">k8s那些事之容器江湖闲话</a></li>
+        
+        <li><a href="/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/">六、监控体系</a></li>
+        
+        <li><a href="/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/">五、EFK</a></li>
+        
+        <li><a href="/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/">四、Harbor镜像仓库</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/tags/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B'>k8s那些事</a></li>
+                
+                <li><a href='/tags/%E5%AE%B9%E5%99%A8'>容器</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="https://chenzongshu.github.io/">蜗牛龙门阵 By chenzongshu</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="https://chenzongshu.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AD%98%E5%82%A8%E7%AF%87/" title="k8s那些事之存储篇">k8s那些事之存储篇</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%9B%9B%E5%A4%A7%E5%A4%A9%E7%8E%8B/" title="k8s那些事之四大天王">k8s那些事之四大天王</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E4%B8%87%E6%B3%95%E4%B9%8B%E6%BA%90pod/" title="k8s那些事之万法之源Pod">k8s那些事之万法之源Pod</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/" title="k8s那些事之容器江湖闲话">k8s那些事之容器江湖闲话</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/" title="六、监控体系">六、监控体系</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/" title="五、EFK">五、EFK</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/" title="四、Harbor镜像仓库">四、Harbor镜像仓库</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/" title="三、Helm和Ingress">三、Helm和Ingress</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/" title="一、容器云架构介绍">一、容器云架构介绍</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="https://chenzongshu.github.io/categories/etcd/">Etcd (6)</a></li>
+    
+    <li><a href="https://chenzongshu.github.io/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/">k8s那些事 (4)</a></li>
+    
+    <li><a href="https://chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA/">容器平台搭建 (6)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="https://chenzongshu.github.io/tags/etcd/">Etcd</a>
+    
+    <a href="https://chenzongshu.github.io/tags/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/">k8s那些事</a>
+    
+    <a href="https://chenzongshu.github.io/tags/kubernetes/">kubernetes</a>
+    
+    <a href="https://chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8/">容器</a>
+    
+    <a href="https://chenzongshu.github.io/tags/%E6%BA%90%E7%A0%81/">源码</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="https://chenzongshu.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

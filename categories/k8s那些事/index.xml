@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>k8s那些事 on 蜗牛龙门阵</title>
+    <link>https://chenzongshu.github.io/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/</link>
+    <description>Recent content in k8s那些事 on 蜗牛龙门阵</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Fri, 12 Feb 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://chenzongshu.github.io/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>k8s那些事之存储篇</title>
+      <link>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AD%98%E5%82%A8%E7%AF%87/</link>
+      <pubDate>Fri, 12 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AD%98%E5%82%A8%E7%AF%87/</guid>
+      <description>概述 Kubernetes存储体系是围绕着PV/PVC资源打造的，支持各种主流的存储卷
+通过下面命令可以看到支持的卷
+kubectl explain pod.spec.volumes 另外也提供插件机制，允许其他类型的存储服务接入到 Kubernetes 系统中来</description>
+    </item>
+    
+    <item>
+      <title>k8s那些事之四大天王</title>
+      <link>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%9B%9B%E5%A4%A7%E5%A4%A9%E7%8E%8B/</link>
+      <pubDate>Sat, 06 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%9B%9B%E5%A4%A7%E5%A4%A9%E7%8E%8B/</guid>
+      <description>本文不想对官方文档内容做过多的搬运，主要介绍一些自己的理解的总结和容易忽略的地方
+ 所谓四大天王指的就是Kubernetes的四个顶级资源模型deployment，statefset，daemonset和job/cronjob。也是大家了解的最多的概念。
+Deployment Deployment无状态应用, 作为Kubernetes应用的最早, 最广泛的资源类型, 为Kubernetes闻名天下立下了汗马功劳.</description>
+    </item>
+    
+    <item>
+      <title>k8s那些事之万法之源Pod</title>
+      <link>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E4%B8%87%E6%B3%95%E4%B9%8B%E6%BA%90pod/</link>
+      <pubDate>Fri, 05 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E4%B8%87%E6%B3%95%E4%B9%8B%E6%BA%90pod/</guid>
+      <description>本文只介绍道，不写术；即试图介绍Kubernetes的思想，并不去罗列概念和操作方式
+ 此Pod者, 乃Kubernetes万法之源, 抽象模型之根本, 调度之要门, 资源模型之宗, 容器设计思想之祖</description>
+    </item>
+    
+    <item>
+      <title>k8s那些事之容器江湖闲话</title>
+      <link>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/</link>
+      <pubDate>Thu, 04 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/</guid>
+      <description>引子 江湖永远不缺乏刀光剑影，鼓角争鸣。可能杰夫·贝佐斯不曾想到，他推出的AWS成了全球云计算IaaS和PaaS的霸主，从根本上改变了IT江湖的格局。
+但是各路诸侯从未放弃自己的勃勃野心
+近几年，云原生概念的提出，容器和kubernetes已经被炒作的非常火热了，甚至传统行业都开始拥抱容器，采用容器平台作为其基础架构
+容器这片江湖也是经历过各方大佬的博弈厮杀，才形成了这样的局面，这回书，我们就来摆摆龙门阵，聊聊大佬们的江湖
+风起微末 2013年，PaaS盛行于江湖，
+一个名字叫dotCloud的小”帮派“凭着东拼西凑的招式混口饭吃，在混不下去之际，决定把自己的武功心法公布于众，开源自己的容器项目Docker，没想到，短短几个月，各路豪强竟然纷纷来投，凭借的，就是自己发明的新招式：Docker镜像</description>
+    </item>
+    
+  </channel>
+</rss>

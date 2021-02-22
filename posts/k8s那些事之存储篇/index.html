@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>k8s那些事之存储篇 | 蜗牛龙门阵</title>
+    <meta property="og:title" content="k8s那些事之存储篇 - 蜗牛龙门阵">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-02-12T00:00:00&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-02-12T00:00:00&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,java,博客,项目管理">
+    <meta name="description" content="k8s那些事之存储篇">
+        
+    <meta name="author" content="chenzongshu">
+    <meta property="og:url" content="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AD%98%E5%82%A8%E7%AF%87/">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="https://chenzongshu.github.io/">
+                        蜗牛龙门阵
+                    </a>
+                
+                <p class="description">专注容器等IT技术</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="" href="https://chenzongshu.github.io/">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents"></nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">k8s那些事之存储篇</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年2月12日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B'>k8s那些事</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <h1 id="概述">概述</h1>
+<p>Kubernetes存储体系是围绕着PV/PVC资源打造的，支持各种主流的存储卷</p>
+<p>通过下面命令可以看到支持的卷</p>
+<pre><code>kubectl explain pod.spec.volumes
+</code></pre><p>另外也提供插件机制，允许其他类型的存储服务接入到 Kubernetes 系统中来</p>
+<p>Kubernetes存储插件有两种模式：<code>In-Tree</code> 和 <code>Out-Of-Tree</code>。<code>In-Tree</code> 就是在 Kubernetes 源码内部实现的，和 Kubernetes 一起发布、管理的，但是更新迭代慢、灵活性比较差，<code>Out-Of-Tree</code> 是独立于 Kubernetes 的，目前主要有 <code>CSI</code> 和 <code>FlexVolume</code> 两种机制，</p>
+<h1 id="pvpvcstorageclass">PV、PVC、StorageClass</h1>
+<p>这一套，基本上是Kubernetes最基本的存储用法</p>
+<pre><code>┌─────────────┐                        
+│     Pod     │                        
+└─────────────┘                        
+       │                               
+       ▼                               
+┌─────────────┐                        
+│     PVC     │────Check───────┐       
+└─────────────┘                ▼       
+       │                ┌─────────────┐
+       │                │StorageClass │
+     Bind               ├─────────────┤
+       │                │ Provisioner │
+       ▼                └─────────────┘
+┌─────────────┐                │       
+│     PV      │◀───Provision───┘       
+└─────────────┘                        
+</code></pre><ul>
+<li>
+<p>PVC 描述的，是 Pod 想要使用的持久化存储的属性，比如存储的大小、读写权限等。</p>
+</li>
+<li>
+<p>PV 描述的，则是一个具体的 Volume 的属性，比如 Volume 的类型、挂载目录、远程存储 服务器地址等。</p>
+</li>
+<li>
+<p>而 StorageClass 的作用，则是充当 PV 的模板。并且，只有同属于一个 StorageClass 的 PV 和 PVC，才可以绑定在一起。当然不用StorageClass也是可以的，但是生产上如果集群有成千上万PVC的时候，不可能手动去创建PV。</p>
+</li>
+</ul>
+<h1 id="flexvolume">FlexVolume</h1>
+<p>flexvolume是一个二进制或者shell脚本，放在每个节点上，来实现 FlexVolume 的相关接口，其操作参数和执行参数都是固定的。</p>
+<p>默认存储插件的存放路径为<code>/usr/libexec/kubernetes/kubelet-plugins/volume/exec/&lt;vendor~driver&gt;/&lt;driver&gt;</code>，<code>VolumePlugins</code> 组件会不断 watch 这个目录来实现插件的添加、删除等功能。</p>
+<p>其中 <code>vendor~driver</code> 的名字需要和 Pod 中<code>flexVolume.driver</code> 的字段名字匹配</p>
+<p>并不一定所有接口都需要实现，比如NFS这样的存储就没必要实现 <code>attach/detach</code> 这些接口了，因为不需要，只需要实现 <code>init/mount/umount</code> 3个接口即可，官方提供了一个简单的示例：https://github.com/kubernetes/examples/blob/master/staging/volumes/flexvolume/nfs</p>
+<p><strong>flexvolume的本质是相当于就是一个普通的 shell 命令</strong>，类似于平时我们在 Linux 下面执行的 <code>ls</code> 命令一样，只是返回的信息是 JSON 格式的数据，并不是我们通常认为的一个常驻内存的进程</p>
+<p>因为其本质，决定了flexvolume即不能Dynamic Provisioning（为每个 PVC 自动创建 PV 和对应的 Volume），又不能保存挂载信息等，所以有了CSI这种更完善的存储插件体系</p>
+<h1 id="csi">CSI</h1>
+<p>Kubernetes内置的存储插件和Flexvolume，仅仅是去操作存储卷，而Dynamic Provisioning这样的功能，需要去监控Kubernetes里面存储事件变化，如PVC创建，来做下一步的逻辑，这部分功能原来是Kubernetes存储管理的一部分。</p>
+<p>CSI的设计思想就是把这个 Provision 阶段，以及 Kubernetes 里的一部分存储管理功能，从主干代码里剥离出来，做成了几个单独的组件。把插件的职责从“两阶段处理”，扩展成了 Provision、Attach 和 Mount 三个阶段。其中，Provision 等价于“创建磁盘”，Attach 等价 于“挂载磁盘到虚拟机”，Mount 等价于“将该磁盘格式化后，挂载在 Volume 的宿主机目录上”。</p>
+<pre><code>                                ┌─────────────────────────────────────────────────┐     
+                                │                                                 │     
+                                ▼                                                 │     
+                     ┌────────────────────┐         ┌───────────────┐        ┌─────────┐
+                     │  Driver Registrar  │────────▶│ CSI Identity  │        │kubelete │
+                     └────────────────────┘         └───────────────┘        └─────────┘
+                                                                                  │     
+                                                                                  │     
+┌──────┐             ┌────────────────────┐         ┌───────────────┐             │     
+│      │      ┌─────▶│External Provisioner│────┬───▶│CSI Controller │             │     
+│      │    PVC      └────────────────────┘    │    └───────────────┘             │     
+│ API  │      │                                │                                  │     
+│Server│──────┤                                │                                  │     
+│      │ VolumeAtta                            │                                  │     
+│      │   chment    ┌────────────────────┐    │    ┌───────────────┐             │     
+└──────┘      └─────▶│ External Attacher  │────┘    │   CSI Node    │◀────────────┘     
+                     └────────────────────┘         └───────────────┘                   
+                                                            │                           
+                                                            │                           
+                                                            ▼                           
+                                                    ┌───────────────┐                   
+                                                    │AWS/NFS/Ceph...│                   
+                                                    └───────────────┘                   
+</code></pre><p>CSI插件可以是一个二进制或者容器，提供三个服务：CSI Identity，CSI Controller 和 CSI Node</p>
+<ul>
+<li>Identity：对外暴露这个插件本身的信息，确保插件的健康状态</li>
+<li>Controller：实现 Volume 管理流程当中的 Provision 和 Attach 阶段</li>
+<li>Node：控制 Kubernetes 节点上的 Volume 操作</li>
+</ul>
+<p>这套存储插件体系多了三个独立的外部组件（External Components），即： Driver Registrar、External Provisioner 和 External Attacher，对应的正是从 Kubernetes 项 目里面剥离出来的那部分存储管理功能。</p>
+<ul>
+<li>
+<p>Driver Registrar：负责将插件注册到 kubelet 里面，实际需要请求 CSI 插件的 Identity 服务来</p>
+<p>获取插件信息</p>
+</li>
+<li>
+<p>External Provisioner：负责 Provision 阶段，监听（Watch）了 APIServer 里的 PVC 对象。当一个 PVC 被创建时，它就会调用 CSI Controller 的 CreateVolume 方法，为你创建对应 PV</p>
+</li>
+<li>
+<p>External Attacher：负责Attach 阶段。它监听了 APIServer 里 VolumeAttachment 对象的变化并调用 CSI 的 ControllerPublish 和 ControllerUnpublish</p>
+</li>
+</ul>
+<p>官方建议了部署方式：<a href="https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/container-storage-interface.md">见图</a></p>
+<p>CSI Controller + Identity部分以 StatefulSet 或者 Deployment 方式部署，Sidecar加上Provisioner和Attacher</p>
+<p>CSI Node + Identity部分以 DaemonSet 方式部署，Sidecar加上Driver Registrar</p>
+
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%9B%9B%E5%A4%A7%E5%A4%A9%E7%8E%8B/">k8s那些事之四大天王</a></li>
+        
+        <li><a href="/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E4%B8%87%E6%B3%95%E4%B9%8B%E6%BA%90pod/">k8s那些事之万法之源Pod</a></li>
+        
+        <li><a href="/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/">k8s那些事之容器江湖闲话</a></li>
+        
+        <li><a href="/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/">六、监控体系</a></li>
+        
+        <li><a href="/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/">五、EFK</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/tags/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B'>k8s那些事</a></li>
+                
+                <li><a href='/tags/%E5%AE%B9%E5%99%A8'>容器</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="https://chenzongshu.github.io/">蜗牛龙门阵 By chenzongshu</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="https://chenzongshu.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AD%98%E5%82%A8%E7%AF%87/" title="k8s那些事之存储篇">k8s那些事之存储篇</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%9B%9B%E5%A4%A7%E5%A4%A9%E7%8E%8B/" title="k8s那些事之四大天王">k8s那些事之四大天王</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E4%B8%87%E6%B3%95%E4%B9%8B%E6%BA%90pod/" title="k8s那些事之万法之源Pod">k8s那些事之万法之源Pod</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/" title="k8s那些事之容器江湖闲话">k8s那些事之容器江湖闲话</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/" title="六、监控体系">六、监控体系</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/" title="五、EFK">五、EFK</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/" title="四、Harbor镜像仓库">四、Harbor镜像仓库</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/" title="三、Helm和Ingress">三、Helm和Ingress</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/" title="一、容器云架构介绍">一、容器云架构介绍</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="https://chenzongshu.github.io/categories/etcd/">Etcd (6)</a></li>
+    
+    <li><a href="https://chenzongshu.github.io/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/">k8s那些事 (4)</a></li>
+    
+    <li><a href="https://chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA/">容器平台搭建 (6)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="https://chenzongshu.github.io/tags/etcd/">Etcd</a>
+    
+    <a href="https://chenzongshu.github.io/tags/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/">k8s那些事</a>
+    
+    <a href="https://chenzongshu.github.io/tags/kubernetes/">kubernetes</a>
+    
+    <a href="https://chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8/">容器</a>
+    
+    <a href="https://chenzongshu.github.io/tags/%E6%BA%90%E7%A0%81/">源码</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="https://chenzongshu.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

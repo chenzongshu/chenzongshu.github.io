@@ -65,6 +65,82 @@
     <article class="post">
         <header>
             <h1 class="post-title">
+                <a href="https://chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Etcd源码分析之磁盘写入及操作">Etcd源码分析之磁盘写入及操作</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年8月8日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/etcd'>Etcd</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            Etcd磁盘要求 官方原文链接: https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/hardware.md
+Etcd对磁盘写入延时非常敏感
+高速磁盘是保证etcd部署性能和稳定性的关键因素。
+慢磁盘会增加etcd的请求延时，潜在影响集群的稳定性。因为etcd一致性协议依赖于元数据写入持久化日志，并且要求集群大多数成员将请求写入磁盘。此外，etcd还会到磁盘上增量检查集群的状态，从而可以截断日志。如果这些写操作花费太长的时间，心跳就可能会超时，触发选举操作，从而破坏集群的稳定性。
+etcd对磁盘写入延时非常敏感。通常稳定达到50 IOPS（比如：一个7200转的磁盘）是必须的，对于负载很高的集群，推荐能稳定达到500 IOPS（比如：一个典型的本地SSD盘或者高性能的虚拟块设备盘）。注意，大多数云服务提供商发布的是瞬时并发IOPS，并不是稳定的IOPS，瞬时并发IOPS可能十倍于稳定连续的IOPS（说明：因为瞬时并发IOPS可能会写缓存，或者测试时无其他用户竞争磁盘资源，所以会很高，当测试时间很长后，就会测试出设备的真实IOPS能力，这个在国内云厂商基本没有这个问题）。测试稳定连续IOPS，我们建议使用磁盘基准测试工具，比如 diskbench 或者 fio。……
+        </div>
+        <p class="readmore"><a href="https://chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">阅读全文</a></p>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/" title="Etcd源码分析之存储">Etcd源码分析之存储</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2018年8月15日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/etcd'>Etcd</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            存储数据结构 Etcd存储在集群搭建和使用篇有简介，总结起来有如下特点：
+ 采用kv型数据存储，一般情况下比关系型数据库快。 支持动态存储(内存)以及静态存储(磁盘)。 分布式存储，可集成为多节点集群。 存储方式，采用类似目录结构。 1、只有叶子节点才能真正存储数据，相当于文件。 2、叶子节点的父节点一定是目录，目录不能存储数据。  叶子节点数据结构位于 /store/store.……
+        </div>
+        <p class="readmore"><a href="https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/">阅读全文</a></p>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/" title="Etcd源码分析之put流程">Etcd源码分析之put流程</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2018年8月10日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/etcd'>Etcd</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            put操作 put操作是etcd v3 client支持的命令，和v2的set用法差不多
+但是需要注意的是，如果你在一个3节点的etcd集群中，A节点切换为v3 client版本，然后put进了一对key-value，在B节点，还是v2的client，这个时候你get不到数据的，如果在B节点切换到了v3 client，这个时候才可以get到数据
+简单的说，v2和v3 client，插入数据到同一个etcd集群中，数据不能互通……
+        </div>
+        <p class="readmore"><a href="https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/">阅读全文</a></p>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
                 <a href="https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Braft%E5%8D%8F%E8%AE%AE/" title="Etcd源码分析之raft协议">Etcd源码分析之raft协议</a>
             </h1>
         </header>
@@ -85,10 +161,7 @@ server通信 概述 server之前的消息传递并不是简单的request-respons
 即每两个server之间会建立两条链路，对于每一个server来说，一条链路专门用来发送数据，另一条链路专门用来接收数据.
 在代码实现中，通过streamWriter发送数据，通过streamReader接收数据。即通过streamReader接收数据接收到数据后会直接响应，在处理完数据后通过streamWriter将响应发送到对端
 对于每个server来说，不管是leader、candicate还是follower，都会维持一个peers数组，每个peer对应集群中的一个server，负责处理server之间的一些数据交互。
-当server需要向其他server发送数据时，只需要找到其他server对应的peer，然后向peer的streamWriter的msgc通道发送数据即可，streamWriter会监听msgc通道的数据并发送到对端server；
-而streamReader会在一个goroutine中循环读取对端发送来的数据，一旦接收到数据，就发送到peer的p.propc或p.recvc通道，而peer会监听这两个通道的事件，写入到node的n.propc或n.recvc通道，node只需要监听这两个通道的数据并处理即可。这就是在etcd的raft实现中server间数据交互的流程。
-启动监听 对于每个server，都会创建一个raftNode，并且启动一个goroutine，执行raftNode的serveRaft方法
-func (rc *raftNode) serveRaft() { ...... err = (&amp;http.Server{Handler: rc.……
+当server需要向其他server发送数据时，只需要找到其他server对应的peer，然后向peer的streamWriter的msgc通道发送数据即可，streamWriter会监听msgc通道的数据并发送到对端server；……
         </div>
         <p class="readmore"><a href="https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Braft%E5%8D%8F%E8%AE%AE/">阅读全文</a></p>
     </article>
@@ -136,7 +209,7 @@ func (rc *raftNode) serveRaft() { ...... err = (&amp;http.Server{Handler: rc.…
         
         <div class="post-content">
             启动 启动从源码 /etcdmain/main.go 中的main函数开始
-func Main() { checkSupportArch() // 检查系统是否支持 if len(os.Args) &gt; 1 { // 获取入参 cmd := os.Args[1] // 获取启动命令 if covArgs := os.……
+func Main() { checkSupportArch() // 检查系统是否支持 if len(os.……
         </div>
         <p class="readmore"><a href="https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%90%AF%E5%8A%A8%E7%AF%87/">阅读全文</a></p>
     </article>
@@ -215,15 +288,23 @@ func Main() { checkSupportArch() // 检查系统是否支持 if len(os.Args) &gt
 <ul class="widget-list">
     
     <li>
-        <a href="https://chenzongshu.github.io/posts/%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/" title="容器江湖闲话">容器江湖闲话</a>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AD%98%E5%82%A8%E7%AF%87/" title="k8s那些事之存储篇">k8s那些事之存储篇</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%9B%9B%E5%A4%A7%E5%A4%A9%E7%8E%8B/" title="k8s那些事之四大天王">k8s那些事之四大天王</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E4%B8%87%E6%B3%95%E4%B9%8B%E6%BA%90pod/" title="k8s那些事之万法之源Pod">k8s那些事之万法之源Pod</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/" title="k8s那些事之容器江湖闲话">k8s那些事之容器江湖闲话</a>
     </li>
     
     <li>
         <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/" title="六、监控体系">六、监控体系</a>
-    </li>
-    
-    <li>
-        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
     </li>
     
     <li>
@@ -243,15 +324,7 @@ func Main() { checkSupportArch() // 检查系统是否支持 if len(os.Args) &gt
     </li>
     
     <li>
-        <a href="https://chenzongshu.github.io/posts/etcd%E7%A3%81%E7%9B%98%E5%86%99%E5%85%A5%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Etcd源码分析之磁盘写入及操作">Etcd源码分析之磁盘写入及操作</a>
-    </li>
-    
-    <li>
-        <a href="https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E5%AD%98%E5%82%A8/" title="Etcd源码分析之存储">Etcd源码分析之存储</a>
-    </li>
-    
-    <li>
-        <a href="https://chenzongshu.github.io/posts/etcd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8Bput%E6%B5%81%E7%A8%8B/" title="Etcd源码分析之put流程">Etcd源码分析之put流程</a>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
     </li>
     
 </ul>
@@ -265,7 +338,7 @@ func Main() { checkSupportArch() // 检查系统是否支持 if len(os.Args) &gt
     
     <li><a href="https://chenzongshu.github.io/categories/etcd/">Etcd (6)</a></li>
     
-    <li><a href="https://chenzongshu.github.io/categories/kubernetes/">kubernetes (1)</a></li>
+    <li><a href="https://chenzongshu.github.io/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/">k8s那些事 (4)</a></li>
     
     <li><a href="https://chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA/">容器平台搭建 (6)</a></li>
     
@@ -277,6 +350,8 @@ func Main() { checkSupportArch() // 检查系统是否支持 if len(os.Args) &gt
 <div class="tagcloud">
     
     <a href="https://chenzongshu.github.io/tags/etcd/">Etcd</a>
+    
+    <a href="https://chenzongshu.github.io/tags/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/">k8s那些事</a>
     
     <a href="https://chenzongshu.github.io/tags/kubernetes/">kubernetes</a>
     
