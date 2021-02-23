@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>k8s那些事之容器网络 | 蜗牛龙门阵</title>
+    <meta property="og:title" content="k8s那些事之容器网络 - 蜗牛龙门阵">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-02-21T00:00:00&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-02-21T00:00:00&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,java,博客,项目管理">
+    <meta name="description" content="k8s那些事之容器网络">
+        
+    <meta name="author" content="chenzongshu">
+    <meta property="og:url" content="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E7%BD%91%E7%BB%9C/">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="https://chenzongshu.github.io/">
+                        蜗牛龙门阵
+                    </a>
+                
+                <p class="description">专注容器等IT技术</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="" href="https://chenzongshu.github.io/">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#flannel-host-gw">flannel host-gw</a></li>
+    <li><a href="#calico">calico</a></li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">k8s那些事之容器网络</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年2月21日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B'>k8s那些事</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>运行环境情况千差万别，所以容器网络方案也是五花八门，官方都列出一堆网络模型：https://kubernetes.io/zh/docs/concepts/cluster-administration/networking/</p>
+<p>最常见的网络插件就是flanneld和calico，最常见的模式是隧道模式或者三层网络模型，下面来从CNI插件来分析下容器网络模型</p>
+<h1 id="vxlan">Vxlan</h1>
+<p>UDP模式因为性能问题被废弃，因为其仅在发出包的过程中，就要经过三次用户态和内核态的数据拷贝。目前使用较多的就是vxlan模式。</p>
+<p>VXLAN，即 Virtual Extensible LAN（虚拟可扩展局域网），是 Linux 内核本身就支持的一种网络 虚似化技术。所以说，VXLAN 可以完全在内核态实现封装和解封装的工作，从而通过相似的“隧道”机制，构建出覆盖网络（Overlay Network）。</p>
+<p>以flanneld为例通信流程：</p>
+<pre><code>                 ┌───────────────────────────────────────────┐                     
+                 │                                           │                     
+                 │ 10.168.0.2/24                             ▼  10.168.0.3/24                   
+┌───────────┬─────────┬──────────────┐      ┌───────────┬─────────┬───────────────┐
+│           │  eth0   │              │      │           │  eth0   │               │
+│           └─────────┘              │      │           └─────────┘               │
+│                ▲                   │      │                │                    │
+│                │                   │      │                ▼                    │
+│         ┌─────────────┐            │      │         ┌─────────────┐             │
+│   VTEP  │  flannel.1  │10.1.15.0/32│      │  VTEP   │  flannel.1  │10.1.16.0/32 │
+│         └─────────────┘            │      │         └─────────────┘             │
+│                ▲                   │      │                │                    │
+│                │                   │      │                ▼                    │
+│         ┌─────────────┐            │      │         ┌─────────────┐             │
+│         │     cni0    │10.1.15.1/24│      │         │     cni0    │10.1.16.1/24 │
+│         └─────────────┘            │      │         └─────────────┘             │
+│                ▲                   │      │                │                    │
+│        ┌───────┴──────────┐        │      │        ┌───────┴──────────┐         │
+│        │                  │        │      │        ▼                  ▼         │
+│  ┌──────────┐       ┌──────────┐   │      │  ┌──────────┐       ┌──────────┐    │
+│  │container1│       │container2│   │      │  │container1│       │container2│    │
+│  └──────────┘       └──────────┘   │      │  └──────────┘       └──────────┘    │
+│   10.1.15.1                        │      │                       10.1.16.3     │
+│              Node1                 │      │              Node2                  │
+└────────────────────────────────────┘      └─────────────────────────────────────┘
+</code></pre><p>flanneld会在宿主机上新建一个VTEP设备flannel.1，既有IP又有MAC地址，当一个节点加入集群的时候，flanneld会把上面节点定义的子网网段写入每个节点的路由，以上图来举例，node2加入集群的时候，node1上会写入一条路由</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ route -n 
+Kernel IP routing table 
+Destination  Gateway  Genmask  Flags Metric Ref  Use Iface
+...
+
+10.1.16.0 10.1.16.0  255.255.255.0  UG  <span style="color:#099">0</span> <span style="color:#099">0</span>  <span style="color:#099">0</span> flannel.1
+</code></pre></td></tr></table>
+</div>
+</div><p>这样node1就知道了凡是发往 10.1.16.0/24 网段的 IP 包，都需要经过 flannel.1 设备发出，并且，它最后被发往的网关地址是：10.1.16.0， 并且10.1.16.0 正是 Node 2 上的 VTEP 设 备（也就是 flannel.1 设备）的 IP 地址</p>
+<p>那vxlan又是怎么模拟二层通信的呢？</p>
+<p>node2的flanneld启动的时候，会在node1的ARP表上加一条数据</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#998;font-style:italic"># 在 Node 1 上 </span>
+$ ip neigh show dev flannel.1 
+10.1.16.0 lladdr 5e:f8:4f:00:e3:37 PERMANENT
+</code></pre></td></tr></table>
+</div>
+</div><p>这条记录的意思非常明确，即：IP 地址 10.1.16.0，对应的 MAC 地址是 5e:f8:4f:00:e3:37，</p>
+<p>然后去一个叫作 FDB（Forwarding Database）的转发数据库查找MAC地址和目的宿主机IP地址的关系</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#998;font-style:italic"># 在 Node 1 上，使用“目的 VTEP 设备”的 MAC 地址进行查询 </span>
+$ bridge fdb show flannel.1 | grep 5e:f8:4f:00:e3:37 
+5e:f8:4f:00:e3:37 dev flannel.1 dst 10.168.0.3 self permanent
+</code></pre></td></tr></table>
+</div>
+</div><p>最后node1的内核就会把node2的mac地址、IP地址和一个vxlan表示VNI封到数据包头，伪装成一个二层包，然后内核把这个数据帧封装到UDP包里发出去</p>
+<p>目的宿主机收到包之后根据VNI进行解包操作，然后宿主机拿到目的容器的MAC地址之后，在本身的CAM表（即交换机通过 MAC 地址学习维护的端口和 MAC 地址的对应表）里面找到端口对应的veth pair，将数据发往这个veth pair，veth pair往往是一对，另一端到容器内部，所以数据就发到了容器内部</p>
+<h1 id="三层网络">三层网络</h1>
+<p>vxlan模式通用性强，但是因为要封包解包，存在网络消耗，所以不少网络插件提供三层网络路由直通方式</p>
+<p>flanneld有host-gw模式，calico有BGP模式</p>
+<h2 id="flannel-host-gw">flannel host-gw</h2>
+<p>当你设置 Flannel 使用 host-gw 模式之后，flanneld 会在宿主机上创建这样一条规则，以上面的node 1 为例</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ ip route 
+...
+10.1.16.1/24 via 10.168.0.3 dev eth0
+</code></pre></td></tr></table>
+</div>
+</div><p>就是设置对应网段的IP包，经过本机的eth0，发到下一跳的IP地址（其实就是node2的eth0的IP）</p>
+<p>当 IP 包从网络层进入链路层封装成帧的时候，eth0 设备 就会使用下一跳地址对应的 MAC 地址，这个数据帧就会从 Node 1 通过宿主机的二层网络顺利到达 Node 2 上</p>
+<p>Node 2 的内核网络栈从二层数据帧里拿到 IP 包后，会“看到”这个 IP 包的目的Pod  IP 地址，然后转发到CNI0网桥</p>
+<p>host-gw 模式能够正常工作的核心，就在于 IP 包在封 装成帧发送出去的时候，会使用路由表里的“下一跳”来设置目的 MAC 地址。这样，它就会经 过二层网络到达目的宿主机。</p>
+<p>Flannel 子网和主机的信息，都是保存在 Etcd 当中的。flanneld 只需要 WACTH 这些数 据的变化，然后实时更新路由表即可，当然用host-gw模式要求二层是联通的。</p>
+<h2 id="calico">calico</h2>
+<p>calico也是比较类似的，不过calico设置这个路由是通过BGP来做的</p>
+<p>每个node上运行一个软路由软件bird，并且被设置成BGP Speaker，与其它node通过BGP协议交换路由信息。</p>
+<p>可以简单理解为，每一个node都会向其它node通知这样的信息:</p>
+<pre><code>我是X.X.X.X，某个IP或者网段在我这里，它们的下一跳地址是我。
+</code></pre><p>这里最核心的“下一跳”路由规则，就是由 Calico 的 Felix 进程负责维护的。这些路由 规则信息，则是通过 BGP Client 也就是 BIRD 组件，使用 BGP 协议传输而来的。</p>
+<p>calico与Flannel 的 host-gw 模式的另一个不同之处， 就是它不会在宿主机上创建任何网桥设备。</p>
+<pre><code>                 ┌─────────────────────────────────────────────┐                    
+                 │                                             │                    
+                 │                                             ▼                    
+┌───────────┬─────────┬──────────────┐        ┌───────────┬─────────┬──────────────┐
+│           │  eth0   │              │        │           │  eth0   │              │
+│           └─────────┘              │        │           └─────────┘              │
+│                ▲                   │        │                │                   │
+│                │                   │        │                ▼                   │
+│         ┌─────────────┐            │        │         ┌─────────────┐            │
+│         │   routes    │            │        │         │   routes    │            │
+│         └─────────────┘            │        │         └─────────────┘            │
+│                ▲                   │        │                │                   │
+│        ┌───────┴──────────┐        │        │        ┌───────┴──────────┐        │
+│        │                  │        │        │        ▼                  ▼        │
+│  ┌───────────┐      ┌───────────┐  │        │  ┌───────────┐      ┌───────────┐  │
+│  │cali9c02e56│      │cali20949C │  │        │  │caliacsdfe5│      │cali20234g │  │
+│  └───────────┘      └───────────┘  │        │  └───────────┘      └───────────┘  │
+│        ▲                  ▲        │        │        │                  │        │
+│        │                  │        │        │        │                  │        │
+│        │                  │        │        │        ▼                  ▼        │
+│  ┌──┬────┬───┐      ┌──┬────┬──┐   │        │  ┌──┬────┬───┐      ┌──┬────┬──┐   │
+│  │  │eth0│   │      │  │eth0│  │   │        │  │  │eth0│   │      │  │eth0│  │   │
+│  │  └────┘   │      │  └────┘  │   │        │  │  └────┘   │      │  └────┘  │   │
+│  │           │      │          │   │        │  │           │      │          │   │
+│  └───────────┘      └──────────┘   │        │  └───────────┘      └──────────┘   │
+│              Node1                 │        │              Node2                 │
+└────────────────────────────────────┘        └────────────────────────────────────┘
+</code></pre><p>Calico 的 CNI 插件会为每个容器设置一个 Veth Pair 设备，然后把其中的一端放置 在宿主机上（它的名字以 cali 前缀开头）</p>
+<p>此外，由于 Calico 没有使用 CNI 的网桥模式，Calico 的 CNI 插件还需要在宿主机上为每个容 器的 Veth Pair 设备配置一条路由规则，用于接收传入的 IP 包。比如，宿主机 Node 2 上的 Container 2 对应的路由规则</p>
+<pre><code>10.1.16.3 dev cali20234g scope link
+</code></pre><p>即发往 10.233.2.3 的 IP 包，应该进入cali20234g设备，这样数据就能通了</p>
+<p>注意Calico也要求二层联通，如果不能联通就需要打开IPIP模式，IPIP模式设置的路由也和BGP有所不同</p>
+<pre><code>10.233.2.0/24 via 192.168.2.2 tunl0
+</code></pre><p>尽管这条规则的下一跳地址仍然是 Node 2 的 IP 地址，但这一次，要负责将 IP 包 发出去的设备，变成了 tunl0，Calico 使用的这个 tunl0 设备，是一个 IP 隧道（IP tunnel）设备。IP 包进入 IP 隧道设备之后，就会被 Linux 内核的 IPIP 驱动接管。IPIP 驱动 会将这个 IP 包直接封装在一个宿主机网络的 IP 包中，这样原先从容器到 Node 2 的 IP 包，就被伪装成了一个从 Node 1 到 Node 2 的 IP 包</p>
+<p>node2拿到之后内核通过IPIP驱动进行解包，从而拿到原始的 IP 包。然后，原始 IP 包就会经过路由规则和 Veth Pair 设备到达目的容器内部。</p>
+
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E6%9C%8D%E5%8A%A1%E6%9A%B4%E9%9C%B2/">k8s那些事之服务暴露</a></li>
+        
+        <li><a href="/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AD%98%E5%82%A8%E7%AF%87/">k8s那些事之存储篇</a></li>
+        
+        <li><a href="/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%9B%9B%E5%A4%A7%E5%A4%A9%E7%8E%8B/">k8s那些事之四大天王</a></li>
+        
+        <li><a href="/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E4%B8%87%E6%B3%95%E4%B9%8B%E6%BA%90pod/">k8s那些事之万法之源Pod</a></li>
+        
+        <li><a href="/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/">k8s那些事之容器江湖闲话</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/tags/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B'>k8s那些事</a></li>
+                
+                <li><a href='/tags/%E5%AE%B9%E5%99%A8'>容器</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="https://chenzongshu.github.io/">蜗牛龙门阵 By chenzongshu</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="https://chenzongshu.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E7%BD%91%E7%BB%9C/" title="k8s那些事之容器网络">k8s那些事之容器网络</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E6%9C%8D%E5%8A%A1%E6%9A%B4%E9%9C%B2/" title="k8s那些事之服务暴露">k8s那些事之服务暴露</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AD%98%E5%82%A8%E7%AF%87/" title="k8s那些事之存储篇">k8s那些事之存储篇</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%9B%9B%E5%A4%A7%E5%A4%A9%E7%8E%8B/" title="k8s那些事之四大天王">k8s那些事之四大天王</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E4%B8%87%E6%B3%95%E4%B9%8B%E6%BA%90pod/" title="k8s那些事之万法之源Pod">k8s那些事之万法之源Pod</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E6%B1%9F%E6%B9%96%E9%97%B2%E8%AF%9D/" title="k8s那些事之容器江湖闲话">k8s那些事之容器江湖闲话</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%85%AD%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB/" title="六、监控体系">六、监控体系</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%94efk/" title="五、EFK">五、EFK</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E5%9B%9Bharbor/" title="四、Harbor镜像仓库">四、Harbor镜像仓库</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/" title="三、Helm和Ingress">三、Helm和Ingress</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="https://chenzongshu.github.io/categories/etcd/">Etcd (6)</a></li>
+    
+    <li><a href="https://chenzongshu.github.io/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/">k8s那些事 (6)</a></li>
+    
+    <li><a href="https://chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA/">容器平台搭建 (6)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="https://chenzongshu.github.io/tags/etcd/">Etcd</a>
+    
+    <a href="https://chenzongshu.github.io/tags/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/">k8s那些事</a>
+    
+    <a href="https://chenzongshu.github.io/tags/kubernetes/">kubernetes</a>
+    
+    <a href="https://chenzongshu.github.io/tags/%E5%AE%B9%E5%99%A8/">容器</a>
+    
+    <a href="https://chenzongshu.github.io/tags/%E6%BA%90%E7%A0%81/">源码</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="https://chenzongshu.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

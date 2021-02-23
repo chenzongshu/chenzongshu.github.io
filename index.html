@@ -65,6 +65,57 @@
     <article class="post">
         <header>
             <h1 class="post-title">
+                <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E7%BD%91%E7%BB%9C/" title="k8s那些事之容器网络">k8s那些事之容器网络</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年2月21日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B'>k8s那些事</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            运行环境情况千差万别，所以容器网络方案也是五花八门，官方都列出一堆网络模型：https://kubernetes.io/zh/docs/concepts/cluster-administration/networking/
+最常见的网络插件就是flanneld和calico，最常见的模式是隧道模式或者三层网络模型，下面来从CNI插件来分析下容器网络模型
+Vxlan UDP模式因为性能问题被废弃，因为其仅在发出包的过程中，就要经过三次用户态和内核态的数据拷贝。目前使用较多的就是vxlan模式。
+VXLAN，即 Virtual Extensible LAN（虚拟可扩展局域网），是 Linux 内核本身就支持的一种网络 虚似化技术。所以说，VXLAN 可以完全在内核态实现封装和解封装的工作，从而通过相似的“隧道”机制，构建出覆盖网络（Overlay Network）。……
+        </div>
+        <p class="readmore"><a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E7%BD%91%E7%BB%9C/">阅读全文</a></p>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E6%9C%8D%E5%8A%A1%E6%9A%B4%E9%9C%B2/" title="k8s那些事之服务暴露">k8s那些事之服务暴露</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年2月15日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B'>k8s那些事</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            前面说的各种资源类型都是Kubernetes中服务和应用模型的抽象, 但是我们要怎么访问这些服务呢?
+考虑两个因素:
+ Pod 的 IP 不是固定的， 一 组 Pod 实例之间总会有负载均衡的需求  Kubernetes提出了通过service对Pod对外服务来进行一层抽象……
+        </div>
+        <p class="readmore"><a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E6%9C%8D%E5%8A%A1%E6%9A%B4%E9%9C%B2/">阅读全文</a></p>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
                 <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AD%98%E5%82%A8%E7%AF%87/" title="k8s那些事之存储篇">k8s那些事之存储篇</a>
             </h1>
         </header>
@@ -264,54 +315,6 @@ Helm 安装 可以到GitHub官网下载： https://github.com/helm/helm/releases
         <p class="readmore"><a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/">阅读全文</a></p>
     </article>
     
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/" title="一、容器云架构介绍">一、容器云架构介绍</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2020年4月10日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA'>容器平台搭建</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            前言 以docker和kubernetes为代表的的容器技术现在在市场上接受度越来越高，业界现在也有较多成熟产品，公有云有阿里华为腾通，私有云有OpenShift，才云，青云kubesphere，Rancher，灵雀云都做的不错， 为什么我们还折腾自建的容器平台？
- 1、自己搭建过的东西更加有掌控力，据我交流，不少公司在体量到了一定程度之后都走上了自建的道路 2、自己搭建过后才对整体框架有了一个清晰的认知。  主要是结合自己的理解和实践，手把手教还不太熟悉容器的同学搭建一套自己的容器平台……
-        </div>
-        <p class="readmore"><a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/">阅读全文</a></p>
-    </article>
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2020年4月10日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA'>容器平台搭建</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            准备 禁用swap Kubernetes 1.8开始要求必须禁用Swap，如果不关闭，默认配置下kubelet将无法启动。
-vim /etc/fstab # / was on /dev/sda1 during installation UUID=8cc33106-20fc-43b7-ad52-298eed8ccae6 / ext4 errors=remount-ro 0 1 #/swapfile none swap sw 0 0 把swapfile行注释掉后执行……
-        </div>
-        <p class="readmore"><a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/">阅读全文</a></p>
-    </article>
-    
     
 
 
@@ -386,6 +389,14 @@ vim /etc/fstab # / was on /dev/sda1 during installation UUID=8cc33106-20fc-43b7-
 <ul class="widget-list">
     
     <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E7%BD%91%E7%BB%9C/" title="k8s那些事之容器网络">k8s那些事之容器网络</a>
+    </li>
+    
+    <li>
+        <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E6%9C%8D%E5%8A%A1%E6%9A%B4%E9%9C%B2/" title="k8s那些事之服务暴露">k8s那些事之服务暴露</a>
+    </li>
+    
+    <li>
         <a href="https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AD%98%E5%82%A8%E7%AF%87/" title="k8s那些事之存储篇">k8s那些事之存储篇</a>
     </li>
     
@@ -417,14 +428,6 @@ vim /etc/fstab # / was on /dev/sda1 during installation UUID=8cc33106-20fc-43b7-
         <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%89helm%E5%92%8Cingress/" title="三、Helm和Ingress">三、Helm和Ingress</a>
     </li>
     
-    <li>
-        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%B8%80%E5%AE%B9%E5%99%A8%E4%BA%91%E6%9E%B6%E6%9E%84%E4%BB%8B%E7%BB%8D/" title="一、容器云架构介绍">一、容器云架构介绍</a>
-    </li>
-    
-    <li>
-        <a href="https://chenzongshu.github.io/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E6%90%AD%E5%BB%BA%E5%AE%B9%E5%99%A8%E4%BA%91%E4%B9%8B%E4%BA%8Ckuberadmin%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4/" title="二、kubeadm安装Kubernetes">二、kubeadm安装Kubernetes</a>
-    </li>
-    
 </ul>
     </section>
 
@@ -436,7 +439,7 @@ vim /etc/fstab # / was on /dev/sda1 during installation UUID=8cc33106-20fc-43b7-
     
     <li><a href="https://chenzongshu.github.io/categories/etcd/">Etcd (6)</a></li>
     
-    <li><a href="https://chenzongshu.github.io/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/">k8s那些事 (4)</a></li>
+    <li><a href="https://chenzongshu.github.io/categories/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/">k8s那些事 (6)</a></li>
     
     <li><a href="https://chenzongshu.github.io/categories/%E5%AE%B9%E5%99%A8%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA/">容器平台搭建 (6)</a></li>
     

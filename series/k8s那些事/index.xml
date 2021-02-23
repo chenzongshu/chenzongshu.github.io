@@ -6,7 +6,30 @@
     <description>Recent content in k8s那些事 on 蜗牛龙门阵</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Fri, 12 Feb 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://chenzongshu.github.io/series/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 21 Feb 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://chenzongshu.github.io/series/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>k8s那些事之容器网络</title>
+      <link>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E7%BD%91%E7%BB%9C/</link>
+      <pubDate>Sun, 21 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AE%B9%E5%99%A8%E7%BD%91%E7%BB%9C/</guid>
+      <description>运行环境情况千差万别，所以容器网络方案也是五花八门，官方都列出一堆网络模型：https://kubernetes.io/zh/docs/concepts/cluster-administration/networking/
+最常见的网络插件就是flanneld和calico，最常见的模式是隧道模式或者三层网络模型，下面来从CNI插件来分析下容器网络模型
+Vxlan UDP模式因为性能问题被废弃，因为其仅在发出包的过程中，就要经过三次用户态和内核态的数据拷贝。目前使用较多的就是vxlan模式。
+VXLAN，即 Virtual Extensible LAN（虚拟可扩展局域网），是 Linux 内核本身就支持的一种网络 虚似化技术。所以说，VXLAN 可以完全在内核态实现封装和解封装的工作，从而通过相似的“隧道”机制，构建出覆盖网络（Overlay Network）。</description>
+    </item>
+    
+    <item>
+      <title>k8s那些事之服务暴露</title>
+      <link>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E6%9C%8D%E5%8A%A1%E6%9A%B4%E9%9C%B2/</link>
+      <pubDate>Mon, 15 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E6%9C%8D%E5%8A%A1%E6%9A%B4%E9%9C%B2/</guid>
+      <description>前面说的各种资源类型都是Kubernetes中服务和应用模型的抽象, 但是我们要怎么访问这些服务呢?
+考虑两个因素:
+ Pod 的 IP 不是固定的， 一 组 Pod 实例之间总会有负载均衡的需求  Kubernetes提出了通过service对Pod对外服务来进行一层抽象</description>
+    </item>
+    
     <item>
       <title>k8s那些事之存储篇</title>
       <link>https://chenzongshu.github.io/posts/k8s%E9%82%A3%E4%BA%9B%E4%BA%8B%E4%B9%8B%E5%AD%98%E5%82%A8%E7%AF%87/</link>
